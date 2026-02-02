@@ -21,5 +21,7 @@ The platform allows users to list items with images and descriptions, discover n
 ## 👥 Group Members
 * **Bhowan Khawas**
 * **Aakriti Gurung**
-* 
 * **Abdul Rehman**
+* **Sameer Shabbir**
+* **Sohail Ismail**
+
