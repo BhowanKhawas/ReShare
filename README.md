@@ -18,7 +18,7 @@ The platform allows users to list items with images and descriptions, discover n
 * **Database:** MongoDB / MySQL (TBD)
 * **DevOps:** Docker, Git
 
-## 👥 Group Members
+## 👥 Inferno's Group Members
 * **Bhowan Khawas**
 * **Aakriti Gurung**
 * **Abdul Rehman**
