@@ -12,6 +12,9 @@ The platform allows users to list items with images and descriptions, discover n
 * **Impact Dashboard:** Track personal environmental impact (waste saved).
 * **Responsive Design:** Fully accessible on desktop and mobile.
 
+## ✨ Sprint1
+
+
 ## 🛠 Tech Stack
 * **Frontend:** HTML5, CSS3, JavaScript (EJS)
 * **Backend:** Node.js, Express.js
