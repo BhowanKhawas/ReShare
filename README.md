@@ -2,7 +2,7 @@
 
 ## Module Information
 
-* **Programme:** BSc Computer Science / BEng Software Engineering / Related
+* **Programme:** BSc Computer Science
 * **Module:** Software Engineering
 * **Module Code:** CMP-N204-0
 * **Assessment Type:** Group Project
