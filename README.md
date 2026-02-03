@@ -1,4 +1,4 @@
-# ReShare – A Community-Based Item Sharing Platform
+# ReShare – A Community-Based Item Sharing Platform.
 
 **ReShare** is a responsive web application designed to help local communities reduce waste and save money by enabling users to share, give away, and reuse unwanted household items.
 
