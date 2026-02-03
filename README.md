@@ -18,7 +18,7 @@ The platform allows users to list items with images and descriptions, discover n
 ## 🛠 Tech Stack
 * **Frontend:** HTML5, CSS3, JavaScript (PUG templating system)
 * **Backend:** Node.js, Express.js
-* **Database:** MongoDB / MySQL (TBD)
+* **Database:** MySQL
 * **DevOps:** Docker, Git
 
 ## 👥 Inferno's Group Members
