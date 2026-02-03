@@ -1,4 +1,4 @@
-# ReShare – Community-Based Item Sharing Platform
+# ReShare – Community-Based Item Sharing Platform.
 
 ## Module Information
 
