@@ -141,7 +141,7 @@ The project follows an **Agile, sprint-based development approach**. Work is div
 * **Aakriti Gurung** – Frontend Development
 * **Abdul Rehman** – DevOps & CI/CD
 * **Sameer Shabbir** – Database Design & Integration
-* **Sohail Ismail** – Backend Development
+* **Ismail Sohail** – Backend Development
 
 *(Roles may overlap to ensure collaborative development.)*
 
