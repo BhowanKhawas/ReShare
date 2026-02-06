@@ -1,6 +1,6 @@
 # ReShare – Community-Based Item Sharing Platform.
 
-## Module Information
+## Module Information.
 
 * **Programme:** BSc Computer Science
 * **Module:** Software Engineering
