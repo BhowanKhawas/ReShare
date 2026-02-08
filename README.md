@@ -119,8 +119,28 @@ docker-compose up --build
 
 ---
 
-## Database Design (Summary)
-3. Accessing the ApplicationOnce the terminal logs show "Connected to database," access the services here:ServiceURL / PortDescriptionWeb Apphttp://localhost:3000The main ReShare application.Database GUIhttp://localhost:8081phpMyAdmin (Login: root / password).MySQL (External)localhost:3308Port for Workbench/TablePlus access.
+# 3. Build and Start Containers
+docker-compose up --build
+```  <-- You were missing these three backticks!
+
+### 3. Accessing the Application
+Once the terminal logs show "Connected to database," access the services here:
+
+| Service | URL / Port | Description |
+| :--- | :--- | :--- |
+| **Web App** | [http://localhost:3000](http://localhost:3000) | The main ReShare application. |
+| **Database GUI** | [http://localhost:8081](http://localhost:8081) | **phpMyAdmin** (Login: `root` / `password`). |
+| **MySQL (External)** | `localhost:3308` | Port for Workbench/TablePlus access. |
+
+---
+
+## Database Design (Summary)  <-- You were missing this header!
+
+### Users Table
+* user_id (Primary Key)
+* name
+* email
+...
 
 ### Users Table
 
