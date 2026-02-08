@@ -93,9 +93,34 @@ The platform supports sustainable consumption, promotes environmental responsibi
 * **Database:** MySQL for persistent data storage
 * **Deployment:** Docker containers with automated CI/CD pipeline via GitHub Actions
 
+
+---
+
+## 🐳 Docker Setup & Installation
+
+### 1. Prerequisites
+* **[Docker Desktop](https://www.docker.com/products/docker-desktop)** (Ensure it is running).
+* **Git** (To clone the repository).
+
+### 2. Installation Steps
+Run the following commands in your terminal:
+
+```bash
+# 1. Clone the repository
+git clone [https://github.com/BhowanKhawas/ReShare.git](https://github.com/BhowanKhawas/ReShare.git)
+cd ReShare
+
+# 2. Setup Environment Variables
+# (Rename the sample file to .env)
+mv env-sample .env
+
+# 3. Build and Start Containers
+docker-compose up --build
+
 ---
 
 ## Database Design (Summary)
+3. Accessing the ApplicationOnce the terminal logs show "Connected to database," access the services here:ServiceURL / PortDescriptionWeb Apphttp://localhost:3000The main ReShare application.Database GUIhttp://localhost:8081phpMyAdmin (Login: root / password).MySQL (External)localhost:3308Port for Workbench/TablePlus access.
 
 ### Users Table
 
