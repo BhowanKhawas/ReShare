@@ -47,7 +47,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 * **Impact Dashboard**
 
-  * Display number of items shared
+  * Display numbers of items shared
   * Highlight contribution to waste reduction
 
 * **Responsive Design**
