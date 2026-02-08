@@ -98,43 +98,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 ## 🐳 Docker Setup & Installation
 
-### 1. Prerequisites
-* **[Docker Desktop](https://www.docker.com/products/docker-desktop)** (Ensure it is running).
-* **Git** (To clone the repository).
-
-### 2. Installation Steps
-Run the following commands in your terminal:
-
-```bash
-# 1. Clone the repository
-git clone [https://github.com/BhowanKhawas/ReShare.git](https://github.com/BhowanKhawas/ReShare.git)
-cd ReShare
-
-# 2. Setup Environment Variables
-# (Rename the sample file to .env)
-mv env-sample .env
-
-# 3. Build and Start Containers
-docker-compose up --build
-
----
-
-# 3. Build and Start Containers
-docker-compose up --build
-```  <-- You were missing these three backticks!
-
-### 3. Accessing the Application
-Once the terminal logs show "Connected to database," access the services here:
-
-| Service | URL / Port | Description |
-| :--- | :--- | :--- |
-| **Web App** | [http://localhost:3000](http://localhost:3000) | The main ReShare application. |
-| **Database GUI** | [http://localhost:8081](http://localhost:8081) | **phpMyAdmin** (Login: `root` / `password`). |
-| **MySQL (External)** | `localhost:3308` | Port for Workbench/TablePlus access. |
-
----
-
-## Database Design (Summary)  <-- You were missing this header!
+* **[Week 1: Docker Setup & Installation Process](week1.md)**
 
 ### Users Table
 * user_id (Primary Key)
