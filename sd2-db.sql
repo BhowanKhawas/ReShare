@@ -1,5 +1,6 @@
 -- Database: sd2-db
-
+volumes:
+      - ./sd2-db.sql:/docker-entrypoint-initdb.d/init.sql
 -- Drop tables in reverse order of dependency to allow for a clean re-run
 DROP TABLE IF EXISTS ITEMS;
 DROP TABLE IF EXISTS USERS;
