@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Lab03 - JavaScript Fundamentals</title>
+    <script src="script1.js"></script>
+    <script src="script_vars.js"></script>
+</head>
+<body>
+    <h1>Lab 03: JavaScript Basics</h1>
+
+    <p id="my_text">Hello, world!</p>
+    <input type="button" value="Click me!" onclick="changeText()">
+
+    <p id="my_paragraph">This text will change color.</p>
+    <input type="button" value="Red" onclick="setRed()">
+    <input type="button" value="Blue" onclick="setBlue()">
+
+    <h2>Variables Output</h2>
+    <script>
+        // Output variables again dynamically into page
+        document.write('Name (from script_vars.js): ' + name + '<br>');
+        document.write('Age: ' + age + '<br>');
+        document.write('Is teacher? ' + teacher + '<br>');
+    </script>
+
+    <h2>Conditionals</h2>
+    <script>
+        var year = 2;
+        if (year == 1) {
+            document.write("You are in year 1<br>");
+        } else if (year == 2) {
+            document.write("You are in year 2<br>");
+        } else {
+            document.write("You are in year 3<br>");
+        }
+
+        // Switch version
+        switch (year) {
+            case 1: document.write("Switch: You are in year 1<br>"); break;
+            case 2: document.write("Switch: You are in year 2<br>"); break;
+            default: document.write("Switch: You are in year 3<br>"); break;
+        }
+    </script>
+
+    <h2>Loops</h2>
+    <script>
+        document.write("For loop 1-20:<br>");
+        for (var i = 1; i <= 20; i++) {
+            document.write(i + "<br>");
+        }
+
+        document.write("While loop 1-20:<br>");
+        var i = 1;
+        while (i <= 20) {
+            document.write(i + "<br>");
+            i++;
+        }
+
+        var names = ["Lisa", "Arturo", "Kimia", "Kevin"];
+        document.write("For-of loop (array names):<br>");
+        for (var name of names) {
+            document.write(name + "<br>");
+        }
+    </script>
+
+    <h2>Function Example</h2>
+    <script>
+        document.write(greet("World") + "<br>");
+    </script>
+</body>
+</html>
