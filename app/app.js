@@ -4,22 +4,26 @@ const express = require("express");
 // Create express app
 var app = express();
 
+// Use the Pug templating engine
+app.set('view engine', 'pug');
+app.set('views', './app/views');
+
 // Add static files location
 app.use(express.static("static"));
 
 // Get the functions in the db.js file to use
 const db = require('./services/db');
 
-// Create a route for root - /
+// Create a route for root
 app.get("/", function(req, res) {
-    res.send("Hello world!");
+    res.render("index");
 });
 
 // Create a route for testing the db
 app.get("/ITEMS", function(req, res) {
-I/ Assumes a table called test_table exists in your database
-var sql = 'select * from test_table';
-/ As we are not inside an async function we cannot use await / So we use .then syntax to ensure that we wait until the
+// Assumes a table called ITEMS exists in your database
+var sql = 'select * from ITEMS';
+// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
 // promise returned by the async function is resolved before we proceed
 db.query (sql).then(results => {
 console.log(results);
@@ -29,9 +33,9 @@ res.json(results)
 
 // Create a route for testing the db
 app.get("/USERS", function(req, res) {
-I/ Assumes a table called test_table exists in your database
-var sql = 'select * from test_table';
-/ As we are not inside an async function we cannot use await / So we use .then syntax to ensure that we wait until the
+// Assumes a table called USERS exists in your database
+var sql = 'select * from USERS';
+// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
 // promise returned by the async function is resolved before we proceed
 db.query (sql).then(results => {
 console.log(results);
