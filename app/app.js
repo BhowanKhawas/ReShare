@@ -6,28 +6,44 @@ const port = 3000;
 // Serve static files from 'static' folder
 app.use(express.static('static'));
 
-// Root route
+// Use the Pug templating engine
+app.set('view engine', 'pug');
+app.set('views', './app/views');
+
+// Add static files location
+app.use(express.static("static"));
+
+// Get the functions in the db.js file to use
+const db = require('./services/db');
+
+// Create a route for root
 app.get("/", function(req, res) {
-    res.send("Hello Ismail!");
+    res.render("index");
 });
 
-// Simple route
-app.get("/roehampton", function(req, res) {
-    console.log(req.url);
-    let path = req.url;
-    res.send(path.substring(0,3)); // first 3 letters
-});
+// Create a route for testing the db
+app.get("/ITEMS", function(req, res) {
+// Assumes a table called ITEMS exists in your database
+var sql = 'select * from ITEMS';
+// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
+// promise returned by the async function is resolved before we proceed
+db.query (sql).then(results => {
+console.log(results);
+res.json(results)
+}) ;
+}) ;
 
-// Dynamic route for /hello/:name
-app.get("/hello/:name", function(req, res) {
-    console.log(req.params);
-    res.send("Hello " + req.params.name);
-});
-
-// Dynamic route for /user/:id
-app.get("/user/:id", function(req, res) {
-    res.send("User ID: " + req.params.id);
-});
+// Create a route for testing the db
+app.get("/USERS", function(req, res) {
+// Assumes a table called USERS exists in your database
+var sql = 'select * from USERS';
+// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
+// promise returned by the async function is resolved before we proceed
+db.query (sql).then(results => {
+console.log(results);
+res.json(results)
+}) ;
+}) ;
 
 // Dynamic route for /student/:name/:id
 app.get("/student/:name/:id", function(req, res) {
