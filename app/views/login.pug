@@ -1,0 +1,92 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1.0")
+    title Login - ReShare
+    
+    //- Styling with ReShare's Sprint 2 Color Scheme
+    style.
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #F9F9F9; /* Off-White Background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .login-container {
+        background: white;
+        padding: 2.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        width: 100%;
+        max-width: 350px;
+      }
+      h1 {
+        color: #2E7D32; /* Forest Green */
+        text-align: center;
+        margin-top: 0;
+      }
+      .form-group {
+        margin-bottom: 1.2rem;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333333;
+        font-weight: bold;
+      }
+      input {
+        width: 100%;
+        padding: 0.6rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        box-sizing: border-box;
+      }
+      button {
+        width: 100%;
+        padding: 0.8rem;
+        background-color: #F57C00; /* Warm Orange */
+        color: white;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #D86A00;
+      }
+      .footer-text {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+      }
+      .footer-text a {
+        color: #2E7D32;
+        text-decoration: none;
+      }
+
+  body
+    div.login-container
+      h1 Welcome to ReShare
+      
+      //- This is the crucial part that talks to your backend!
+      form(action="/login", method="POST")
+        div.form-group
+          label(for="email") Email Address
+          //- The 'name' attribute is what your Node.js server will read
+          input(type="email", id="email", name="email", required, placeholder="you@example.com")
+        
+        div.form-group
+          label(for="password") Password
+          input(type="password", id="password", name="password", required, placeholder="Enter your password")
+        
+        button(type="submit") Log In
+      
+      p.footer-text
+        | Don't have an account? 
+        a(href="/register") Sign up here
