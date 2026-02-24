@@ -44,7 +44,9 @@ CREATE TABLE USERS (
     email              VARCHAR(255) NOT NULL UNIQUE,
     password_hash      VARCHAR(255) NOT NULL,
     profile_image      VARCHAR(255),
+    role               ENUM('user', 'admin') DEFAULT 'user', -- Added: for administrative control
     items_gifted_count INTEGER DEFAULT 0,
+    last_login         TIMESTAMP NULL,                       -- Added: to track user activity
     created_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (user_id)
 );
@@ -57,7 +59,9 @@ CREATE TABLE LISTINGS (
     claimed_by_id INTEGER DEFAULT NULL,
     title         VARCHAR(255) NOT NULL,
     description   TEXT,
+    item_condition ENUM('New', 'Like New', 'Good', 'Fair') DEFAULT 'Good', -- Added: condition filter
     status        VARCHAR(50) DEFAULT 'available',
+    claimed_at    TIMESTAMP NULL,                        -- Added: to record when swap happened
     created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (listing_id)
 );
@@ -66,6 +70,7 @@ CREATE TABLE LISTING_IMAGES (
     image_id   INTEGER NOT NULL AUTO_INCREMENT,
     listing_id INTEGER NOT NULL,
     image_url  VARCHAR(255) NOT NULL,
+    is_main    BOOLEAN DEFAULT FALSE,                -- Added: to select the thumbnail image
     PRIMARY KEY (image_id)
 );
 
@@ -73,6 +78,7 @@ CREATE TABLE CONVERSATIONS (
     conversation_id INTEGER NOT NULL AUTO_INCREMENT,
     listing_id      INTEGER NOT NULL,
     requester_id    INTEGER NOT NULL,
+    updated_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Added: to sort inbox by newest activity
     created_at      TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (conversation_id)
 );
@@ -82,6 +88,7 @@ CREATE TABLE MESSAGES (
     conversation_id INTEGER NOT NULL,
     sender_id       INTEGER NOT NULL,
     message_text    TEXT NOT NULL,
+    is_read         BOOLEAN DEFAULT FALSE,               -- Added: for "unread message" alerts
     sent_at         TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (message_id)
 );
@@ -156,30 +163,28 @@ INSERT INTO CATEGORIES (name) VALUES
 ('Books'),
 ('Clothing');
 
--- Insert Users (Passwords are just examples, should be hashed in real app)
-INSERT INTO USERS (location_id, name, email, password_hash, items_gifted_count) VALUES
-(1, 'Sarah Jenkins', 'sarah@example.com', 'hashed_pass_123', 5),
-(2, 'Dave Smith', 'dave@student.ac.uk', 'hashed_pass_456', 0),
-(1, 'Emma Watson', 'emma@example.com', 'hashed_pass_789', 2);
+-- Insert Users
+INSERT INTO USERS (location_id, name, email, password_hash, items_gifted_count, role) VALUES
+(1, 'Sarah Jenkins', 'sarah@example.com', 'hashed_pass_123', 5, 'user'),
+(2, 'Dave Smith', 'dave@student.ac.uk', 'hashed_pass_456', 0, 'user'),
+(1, 'Emma Watson', 'emma@example.com', 'hashed_pass_789', 2, 'admin');
 
 -- Insert Listings
--- Listing 1: Available table posted by Sarah
--- Listing 2: Completed textbook posted by Emma, claimed by Dave
-INSERT INTO LISTINGS (user_id, category_id, location_id, claimed_by_id, title, description, status) VALUES
-(1, 1, 1, NULL, 'Wooden Dining Table', 'Sturdy 4-seater table. A few scratches but great condition.', 'available'),
-(3, 3, 1, 2, 'Computer Science Textbook', 'Used for Year 1. Free to a good home.', 'completed');
+INSERT INTO LISTINGS (user_id, category_id, location_id, claimed_by_id, title, description, item_condition, status) VALUES
+(1, 1, 1, NULL, 'Wooden Dining Table', 'Sturdy 4-seater table. A few scratches but great condition.', 'Good', 'available'),
+(3, 3, 1, 2, 'Computer Science Textbook', 'Used for Year 1. Free to a good home.', 'Like New', 'completed');
 
--- Insert Images for the listings
-INSERT INTO LISTING_IMAGES (listing_id, image_url) VALUES
-(1, '/uploads/table_front.jpg'),
-(1, '/uploads/table_top.jpg'),
-(2, '/uploads/book_cover.jpg');
+-- Insert Images
+INSERT INTO LISTING_IMAGES (listing_id, image_url, is_main) VALUES
+(1, '/uploads/table_front.jpg', TRUE),
+(1, '/uploads/table_top.jpg', FALSE),
+(2, '/uploads/book_cover.jpg', TRUE);
 
--- Insert a Conversation (Dave asking Sarah about the table)
+-- Insert Conversations
 INSERT INTO CONVERSATIONS (listing_id, requester_id) VALUES
 (1, 2);
 
--- Insert Messages into that conversation
-INSERT INTO MESSAGES (conversation_id, sender_id, message_text) VALUES
-(1, 2, 'Hi Sarah, is this table still available? Can I pick it up tomorrow?'),
-(1, 1, 'Hi Dave, yes it is! Tomorrow at 6 PM works for me.');
+-- Insert Messages
+INSERT INTO MESSAGES (conversation_id, sender_id, message_text, is_read) VALUES
+(1, 2, 'Hi Sarah, is this table still available? Can I pick it up tomorrow?', TRUE),
+(1, 1, 'Hi Dave, yes it is! Tomorrow at 6 PM works for me.', FALSE);
