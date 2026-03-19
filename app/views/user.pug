@@ -1,0 +1,37 @@
+doctype html
+html(lang="en")
+    head
+        title User Profile | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+            h1.page-title User Profile: #{user.name}
+
+            .form-container
+                .form-card
+                    h3 Profile Info
+                    p 
+                        strong Email: 
+                        | #{user.email}
+                    p 
+                        strong Current Name: 
+                        | #{user.name}
+
+                    hr
+                    h3 Edit Profile Name
+                    p.form-footer Capture new user data for the backend[cite: 325].
+                    
+                    //- POST route captures the input [cite: 5, 245]
+                    form(action="/update-user-name", method="POST")
+                        input(type="hidden", name="user_id", value=user.user_id)
+                        
+                        div.form-group
+                            label(for="newName") New Name:
+                            input(type="text", name="newName", value=user.name, required)
+                        
+                        button.login-btn(type="submit") Update Name
+
+            .user-story
+                strong Lab Goal:
+                |  Sending user data to the database via express/pug[cite: 5].
