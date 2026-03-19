@@ -1,76 +1,56 @@
-// Import express.js
+// app.js
 const express = require("express");
+const app = express();
 
-// Create express app
-var app = express();
+// 1. Setup Data Parsing (Allows Express to read form data)
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-// Use the Pug templating engine
+// 2. Setup View Engine (PUG - The 'View' in MVC)
 app.set('view engine', 'pug');
-app.set('views', './app/views');
+app.set('views', './views'); 
 
-// Add static files location
-app.use(express.static("static"));
+// 3. Setup Static Files (CSS/Images)
+app.use(express.static("public"));
 
-// Get the functions in the db.js file to use
-const db = require('./services/db');
+// 4. Import Routes (The 'Controller' in MVC)
+// This imports all that logic you moved to routes/auth.js
+const authRoutes = require('./routes/auth');
+const db = require('./services/db'); // Keep your database connection
 
-// Create a route for root
-app.get("/", function(req, res) {
-    res.render("login");
-});
+// ==========================================
+// FRONT-END PAGE ROUTES (Views)
+// ==========================================
+app.get("/", (req, res) => res.render("login"));
+app.get("/login", (req, res) => res.render("login"));
+app.get("/signup", (req, res) => res.render("signup"));
 
-// Create a route for testing the db
+// ==========================================
+// BACK-END LOGIC ROUTES (Controllers)
+// ==========================================
+// Any form that submits to /auth/... will be handled by your auth.js file
+app.use('/auth', authRoutes); 
+
+// ==========================================
+// API / DATABASE TEST ROUTES
+// ==========================================
 app.get("/ITEMS", function(req, res) {
-// Assumes a table called ITEMS exists in your database
-var sql = 'select * from ITEMS';
-// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
-// promise returned by the async function is resolved before we proceed
-db.query (sql).then(results => {
-console.log(results);
-res.json(results)
-}) ;
-}) ;
+    const sql = 'select * from ITEMS'; 
+    db.query(sql)
+        .then(results => res.json(results))
+        .catch(err => res.status(500).send("Database connection failed.")); 
+});
 
-// Create a route for testing the db
 app.get("/USERS", function(req, res) {
-// Assumes a table called USERS exists in your database
-var sql = 'select * from USERS';
-// As we are not inside an async function we cannot use await // So we use .then syntax to ensure that we wait until the
-// promise returned by the async function is resolved before we proceed
-db.query (sql).then(results => {
-console.log(results);
-res.json(results)
-}) ;
-}) ;
-
-// Create a route for testing the db
-app.get("/db_test", function(req, res) {
-    // Assumes a table called test_table exists in your database
-    sql = 'select * from test_table';
-    db.query(sql).then(results => {
-        console.log(results);
-        res.send(results)
-    });
+    const sql = 'select * from USERS'; 
+    db.query(sql)
+        .then(results => res.json(results))
+        .catch(err => res.status(500).send("Database connection failed.")); 
 });
 
-// Create a route for /goodbye
-// Responds to a 'GET' request
-app.get("/goodbye", function(req, res) {
-    res.send("Goodbye world!");
-});
-
-// Create a dynamic route for /hello/<name>, where name is any value provided by user
-// At the end of the URL
-// Responds to a 'GET' request
-app.get("/hello/:name", function(req, res) {
-    // req.params contains any parameters in the request
-    // We can examine it in the console for debugging purposes
-    console.log(req.params);
-    //  Retrieve the 'name' parameter and use it in a dynamically generated page
-    res.send("Hello " + req.params.name);
-});
-
-// Start server on port 3000
-app.listen(3000,function(){
+// ==========================================
+// START SERVER
+// ==========================================
+app.listen(3000, function(){
     console.log(`Server running at http://127.0.0.1:3000/`);
 });

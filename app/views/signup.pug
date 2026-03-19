@@ -1,0 +1,46 @@
+doctype html
+html(lang="en")
+    head
+        title Create Account | ReShare
+        //- Absolute path for MVC static routing
+        link(rel="stylesheet", href="/style.css")
+
+    body
+        div.wrapper
+            //- Professional Modular Navigation
+            include ./includes/nav.pug
+
+            h1.page-title Join ReShare
+
+            .form-container
+                .form-card
+                    h3 Create Account
+                    
+                    //- Form points to the separated auth controller
+                    form(action="/auth/signup", method="POST")
+                        div.form-group
+                            label(for="name") Full Name
+                            input(type="text", id="name", name="name", placeholder="Enter your name", required)
+
+                        div.form-group
+                            label(for="email") Email Address
+                            input(type="email", id="email", name="email", placeholder="Enter email", required)
+
+                        div.form-group
+                            label(for="password") Password
+                            input(type="password", id="password", name="password", placeholder="Create password (8+ characters)", minlength="8", required)
+
+                        div.form-group
+                            label(for="location") Location
+                            input(type="text", id="location", name="location", placeholder="Enter your area", required)
+
+                        button.signup-btn(type="submit") Sign Up
+                    
+                    p.form-footer 
+                        | Already have an account? 
+                        a(href="/login") Sign in here
+
+            //- Documentation Link: Ties code to requirements
+            .user-story
+                strong User Story:
+                |  "As a user, I want to create an account and log in securely with encrypted password storage, so that my personal information is protected."

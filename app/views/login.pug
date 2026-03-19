@@ -1,93 +1,38 @@
 doctype html
 html(lang="en")
-  head
-    meta(charset="UTF-8")
-    meta(name="viewport", content="width=device-width, initial-scale=1.0")
-    title Login - ReShare
-    
-    //- Styling with ReShare's New Brand Color Scheme
-    style.
-      body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #F4F6F8; /* Clean & Neutral Background */
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        height: 100vh;
-        margin: 0;
-      }
-      .login-container {
-        background: #FFFFFF;
-        padding: 2.5rem;
-        border-radius: 10px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        width: 100%;
-        max-width: 350px;
-      }
-      h1 {
-        color: #1A1A2E; /* Bold & Strong Dark Navy */
-        text-align: center;
-        margin-top: 0;
-      }
-      .form-group {
-        margin-bottom: 1.2rem;
-      }
-      label {
-        display: block;
-        margin-bottom: 0.5rem;
-        color: #1A1A2E; /* Bold & Strong Dark Navy */
-        font-weight: bold;
-      }
-      input {
-        width: 100%;
-        padding: 0.6rem;
-        border: 1px solid #ccc; /* Kept standard border */
-        border-radius: 5px;
-        box-sizing: border-box;
-      }
-      button {
-        width: 100%;
-        padding: 0.8rem;
-        background-color: #2563EB; /* Calm & Open Blue */
-        color: #FFFFFF;
-        border: none;
-        border-radius: 5px;
-        font-size: 1rem;
-        font-weight: bold;
-        cursor: pointer;
-        transition: background-color 0.3s;
-      }
-      button:hover {
-        background-color: #4A8FFF; /* Lighter Blue on hover */
-      }
-      .footer-text {
-        text-align: center;
-        margin-top: 1rem;
-        font-size: 0.9rem;
-        color: #1A1A2E;
-      }
-      .footer-text a {
-        color: #00D4A0; /* Growth & Fresh Teal */
-        text-decoration: none;
-      }
+    head
+        title Login | ReShare
+        //- TWEAK 1: Absolute path to the public folder
+        link(rel="stylesheet", href="/style.css")
 
-  body
-    div.login-container
-      h1 Welcome to ReShare
-      
-      //- This is the crucial part that talks to your backend!
-      form(action="/login", method="POST")
-        div.form-group
-          label(for="email") Email Address
-          //- The 'name' attribute is what your Node.js server will read
-          input(type="email", id="email", name="email", required, placeholder="you@example.com")
-        
-        div.form-group
-          label(for="password") Password
-          input(type="password", id="password", name="password", required, placeholder="Enter your password")
-        
-        button(type="submit") Log In
-      
-      p.footer-text
-        | Don't have an account? 
-        a(href="/register") Sign up here
+    body
+        div.wrapper
+            //- Professional Modular Navigation
+            include ./includes/nav.pug
+
+            h1.page-title Sign In to ReShare
+
+            .form-container
+                .form-card
+                    h3 Welcome Back
+                    
+                    //- TWEAK 2: Points to the new auth controller router
+                    form(action="/auth/login", method="POST")
+                        div.form-group
+                            label(for="email") Email Address
+                            input(type="email", id="email", name="email", placeholder="Enter your email", required)
+
+                        div.form-group
+                            label(for="password") Password
+                            input(type="password", id="password", name="password", placeholder="Enter password", required)
+
+                        button.login-btn(type="submit") Login
+                    
+                    p.form-footer 
+                        | New to ReShare? 
+                        a(href="/signup") Create an account
+
+            //- Documentation Link: Ties code to requirements
+            .user-story
+                strong User Story:
+                |  "As a registered user, I want to log in securely so that I can manage my listings and messages."

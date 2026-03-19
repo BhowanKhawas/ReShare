@@ -1,0 +1,152 @@
+/* public/style.css */
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #F4F6F8 !important;
+}
+
+.wrapper {
+  margin: 0 auto;
+  width: 90%;
+  max-width: 1200px;
+  padding: 30px 15px;
+}
+
+/* --- Navigation --- */
+nav {
+  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 40px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border-radius: 8px;
+  margin-bottom: 30px;
+}
+
+.logo img {
+  height: 60px;
+  width: auto;
+}
+
+.nav-links a {
+  margin-left: 20px;
+  text-decoration: none;
+  color: #1A1A2E;
+  font-weight: 500;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.nav-links a:hover {
+  background-color: #09555B; /* ReShare Teal */
+  color: white;
+}
+
+.page-title {
+  text-align: center;
+  color: #0B4D6A; /* ReShare Deep Blue */
+  margin: 25px 0 10px;
+}
+
+/* --- Professional Form Styling --- */
+.form-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.form-card {
+  background: #ffffff;
+  padding: 35px 30px;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(9, 85, 91, 0.08);
+  border: 1px solid #e3e6ea;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto 25px auto;
+  box-sizing: border-box;
+}
+
+.form-card h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #0B4D6A;
+  text-align: center;
+  font-size: 22px;
+}
+
+.form-group {
+  margin-bottom: 18px;
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #0B4D6A;
+  font-size: 14px;
+}
+
+input {
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+input:focus {
+  outline: none;
+  border-color: #09555B;
+  box-shadow: 0 0 0 3px rgba(9, 85, 91, 0.1);
+}
+
+.login-btn {
+  width: 100%;
+  margin-top: 15px;
+  padding: 12px;
+  border: none;
+  border-radius: 6px;
+  background: #09555B;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.login-btn:hover {
+  background: #0B4D6A;
+}
+
+.form-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 14px;
+  color: #666;
+}
+
+.form-footer a {
+  color: #09555B;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.user-story {
+  margin-top: 30px;
+  background: #e6f7f1;
+  color: #09555B;
+  padding: 15px;
+  border-radius: 8px;
+  font-size: 14px;
+  border-left: 4px solid #09555B;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
