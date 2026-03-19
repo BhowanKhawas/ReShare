@@ -14,6 +14,7 @@ require("dotenv").config({ path: path.join(__dirname, '../.env') });
 // 2. IMPORTS (The 'Model' and 'Service' layers)
 const db = require('./services/db'); 
 const User = require('./models/user'); // Your OOP User Model
+const Listing = require('./models/listing'); // [ADDED] Listing Model for MVC
 const authRoutes = require('./routes/auth'); // Your Auth Controller
 
 // 3. MIDDLEWARE SETUP
@@ -37,6 +38,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get("/", (req, res) => res.render("login"));
 app.get("/login", (req, res) => res.render("login"));
 app.get("/signup", (req, res) => res.render("signup"));
+
+/**
+ * [ADDED] LIST ITEM VIEW
+ * Renders the form for users to post a new item
+ */
+app.get("/list-item", (req, res) => res.render("listing"));
 
 /**
  * SINGLE USER PROFILE VIEW
@@ -87,6 +94,21 @@ app.post("/update-user-name", async function (req, res) {
     } catch (err) {
         console.error(err);
         res.status(500).send("Failed to update name.");
+    }
+});
+
+/**
+ * [ADDED] POST ROUTE: CREATE NEW LISTING
+ * Captures the 'listing.pug' form data and uses the Model to save it
+ */
+app.post("/add-listing", async (req, res) => {
+    try {
+        // Capture data and pass to the Static Model Method
+        await Listing.create(req.body);
+        res.redirect("/LISTINGS"); // Redirect to the API test route to see your new data
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error saving your listing.");
     }
 });
 

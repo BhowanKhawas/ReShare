@@ -1,0 +1,61 @@
+doctype html 
+html 
+    head 
+        title Softwear Engineering Assignment 
+        link(rel="stylesheet", href="./style.css")
+
+    body
+        div.wraper
+            nav
+                div.logo
+                    img(src="./images/Logo.png")
+                div.nav-links
+                    a(href="./index.html") Home
+                    //- a(href="./about.html") About
+                    //- a(href="./items.html") Brows Items
+                    //- a(href="./categories.html") Categories
+                    a(href="./community.html") My List
+                    a(href="./loginsignup.html") Logout
+
+            .container
+                h2(style="text-align:center;").page-title List a New Item
+                .form-card
+                    form.listing-form
+                        .form-group
+                            label Item Title *
+                            input(type="text", placeholder="Enter item name")
+
+                        .form-group
+                            label Category *
+                            select
+                                option --- Select category ----
+                                option Books
+                                option Furniture
+                                option LCD
+
+                        .form-group
+                            label Condition *
+                            select
+                                option --- Select condition ---
+                                option --- Good ---
+                                option --- Fair ---
+                                option --- Poor ---
+                                
+
+                        .form-group
+                            label Description *
+                            textarea(placeholder="Describe your item in detail...")
+
+                        .form-group
+                            label Upload Image *
+
+                        .upload-box
+                            span.icon 📷
+                            p Click to upload image
+                            input(type="file")
+
+                        button.submit-btn(type="submit", style="margin-top:10px;") Post Item to Community
+
+                    .user-story
+                        strong User Story:
+                        |  "As a user with unwanted household items, I want to easily create a detailed listing with images and descriptions, so that I can offer the item clearly and accurately to others in my community."
