@@ -13,7 +13,7 @@ require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
 // 2. IMPORTS (The 'Model' and 'Service' layers)
 const db = require('./services/db'); 
-const User = require('./models/User'); // Your OOP User Model
+const User = require('./models/user'); // Your OOP User Model
 const authRoutes = require('./routes/auth'); // Your Auth Controller
 
 // 3. MIDDLEWARE SETUP
