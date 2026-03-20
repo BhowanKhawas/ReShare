@@ -17,7 +17,7 @@ html(lang="en")
                     h3 Welcome Back
                     
                     //- TWEAK 2: Points to the new auth controller router
-                    form(action="/auth/login", method="POST")
+                    form(action="/authenticate", method="POST")
                         div.form-group
                             label(for="email") Email Address
                             input(type="email", id="email", name="email", placeholder="Enter your email", required)

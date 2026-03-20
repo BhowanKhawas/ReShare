@@ -16,8 +16,7 @@ html(lang="en")
                 .form-card
                     h3 Create Account
                     
-                    //- Form points to the separated auth controller
-                    form(action="/auth/signup", method="POST")
+                    form(action="/set-password", method="POST")
                         div.form-group
                             label(for="name") Full Name
                             input(type="text", id="name", name="name", placeholder="Enter your name", required)
@@ -32,7 +31,12 @@ html(lang="en")
 
                         div.form-group
                             label(for="location") Location
-                            input(type="text", id="location", name="location", placeholder="Enter your area", required)
+                            //- Dynamically populated dropdown
+                            select(id="location", name="location", required)
+                                option(value="" disabled selected) Select your area
+                                if locations
+                                    each loc in locations
+                                        option(value=loc.location_id) #{loc.city}, #{loc.region}
 
                         button.signup-btn(type="submit") Sign Up
                     
@@ -43,4 +47,4 @@ html(lang="en")
             //- Documentation Link: Ties code to requirements
             .user-story
                 strong User Story:
-                |  "As a user, I want to create an account and log in securely with encrypted password storage, so that my personal information is protected."
+                | "As a user, I want to create an account and log in securely with encrypted password storage, so that my personal information is protected."

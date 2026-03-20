@@ -20,4 +20,5 @@ html(lang="en")
                         div.form-group
                             label(for="newName") Change Display Name:
                             input(type="text", name="newName", value=user.name, required)
-                        button.login-btn(type="submit") Update Profile
+                        if session && session.role == 'admin'
+                            button(type="submit") Update Name

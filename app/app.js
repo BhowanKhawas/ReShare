@@ -7,15 +7,31 @@ const path = require("path");
 const express = require("express");
 const app = express();
 
+// Set the sessions
+var session = require('express-session');
+app.use(session({
+  secret: 'secretkeysdfjsflyoifasd',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false }
+}));
+
+// Global Middleware to expose session data to all Pug views
+app.use((req, res, next) => {
+    res.locals.session = req.session;
+    next();
+});
+
 // 1. ENVIRONMENT CONFIGURATION
 // Since .env is in the root (one level up), we point the path there
 require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
 // 2. IMPORTS (The 'Model' and 'Service' layers)
 const db = require('./services/db'); 
-const User = require('./models/user'); // Your OOP User Model
+
+const { User } = require('./models/user');
+
 const Listing = require('./models/listing'); // [ADDED] Listing Model for MVC
-const authRoutes = require('./routes/auth'); // Your Auth Controller
 
 // 3. MIDDLEWARE SETUP
 // Essential for capturing data from PUG forms (Session 8 Method)
@@ -35,9 +51,21 @@ app.use(express.static(path.join(__dirname, 'public')));
 // FRONT-END PAGE ROUTES (Views)
 // ==========================================
 
-app.get("/", (req, res) => res.render("login"));
-app.get("/login", (req, res) => res.render("login"));
-app.get("/signup", (req, res) => res.render("signup"));
+// Create a route for root - /
+app.get("/", function(req, res) {
+    console.log(req.session);
+    if (req.session.uid) {
+		res.render("index");
+	} else {
+		res.redirect("/login");
+	}
+	res.end();
+});
+
+app.get("/login", function(req, res){
+    console.log(req.session);
+    res.render("login");
+});
 
 /**
  * [ADDED] LIST ITEM VIEW
@@ -52,12 +80,13 @@ app.get("/list-item", (req, res) => res.render("listing"));
 app.get("/user/:id", async function (req, res) {
     const userId = req.params.id;
     const sql = "SELECT * FROM USERS WHERE user_id = ?";
-    
+
+    console.log("CURRENT SESSION:", req.session); // ADD THIS LINE
     try {
         const results = await db.query(sql, [userId]);
         if (results.length > 0) {
             // Renders 'user.pug' and passes the database object
-            res.render('user', { user: results[0] }); 
+            res.render('user', { user: results[0], session: req.session }); 
         } else {
             res.status(404).send("User not found in ReShare.");
         }
@@ -70,10 +99,6 @@ app.get("/user/:id", async function (req, res) {
 // ==========================================
 // BACK-END LOGIC ROUTES (Controllers)
 // ==========================================
-
-// Mount authentication routes (Login/Signup logic)
-app.use('/auth', authRoutes); 
-
 /**
  * POST ROUTE: UPDATE USER NAME
  * Captures user input and updates the Model without changing schema
@@ -127,6 +152,83 @@ app.get("/USERS", function(req, res) {
         .then(results => res.json(results))
         .catch(err => res.status(500).send("Database connection failed.")); 
 });
+
+
+// ==========================================
+// AUTHENTICATION ROUTES
+// ==========================================
+app.get("/signup", async (req, res) => {
+    try {
+        const locations = await db.query("SELECT location_id, city, region FROM LOCATIONS");
+        console.log("Locations loaded for signup:", locations);
+        res.render("signup", { locations: locations });
+    } catch (err) {
+        console.error("Error loading locations:", err);
+        res.status(500).send("Error loading signup page.");
+    }
+});
+
+// POST: Handle Account Creation
+app.post('/set-password', async (req, res) => {
+    // Capture data from the form
+    const { name, email, location, password } = req.body;
+    
+    // Initialize the Model with all captured fields (requires the updated User.js model)
+    const user = new User(email, name, location);
+
+    try {
+        const uId = await user.getIdFromEmail();
+
+        if (uId) {
+            await user.setUserPassword(password);
+            res.send('Password updated successfully for existing email.');
+        } else {
+            await user.addUser(password);
+            res.redirect('/login'); 
+        }
+    } catch (err) {
+        console.error(`Error while adding user:`, err.message);
+        res.status(500).send('Server error during signup');
+    }
+});
+
+// POST: Handle Login Verification
+app.post('/authenticate', async (req, res) => {
+    const { email, password } = req.body; 
+    const user = new User(email); 
+    
+    try {
+        const uId = await user.getIdFromEmail();
+        if (uId) {
+            const match = await user.authenticate(password);
+            if (match) {
+                req.session.uid = uId;
+                req.session.loggedIn = true;
+                req.session.role = user.role;
+                
+                // Redirect to the user's profile page
+                res.redirect('/user/' + uId);
+            } else {
+                res.send('Invalid password.');
+            }
+        } else {
+            res.send('Invalid email.');
+        }
+    } catch (err) {
+        console.error(`Auth Error: `, err.message);
+        res.status(500).send("A server error occurred during login.");
+    }
+});
+
+
+// Logout
+app.get('/logout', function (req, res) {
+    req.session.destroy();
+    res.redirect('/login');
+  });
+  
+
+
 
 // ==========================================
 // START SERVER
