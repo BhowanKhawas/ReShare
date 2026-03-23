@@ -106,6 +106,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 The project follows an **Agile, sprint-based development approach**. Work is divided into iterations (sprints), with tasks tracked using GitHub Projects. Each sprint includes planning, implementation, testing, and review stages.
 
+
 ---
 
 ## Sprint 1 Focus
