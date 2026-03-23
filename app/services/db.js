@@ -18,9 +18,8 @@ const config = {
   },
 };
 
-// 3. Create the Pool
+// 3. Create a MySQL connection pool
 const pool = mysql.createPool(config.db);
-
 
 // Utility function for the Model to use
 async function query(sql, params = []) {
@@ -45,7 +44,7 @@ pool.getConnection()
         conn.release();
     })
     .catch(err => {
-        console.log("❌ Database Connection Failed!");
+        console.log("❌ Database Connection Failed");
         console.log("Error:", err.message);
     });
 
