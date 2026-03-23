@@ -26,6 +26,8 @@ It is important to follow these norms to create a collaborative environment and 
 
   ---
 
+---
+
 ## 3. Accountability
 
 - **Feedback in Meetings:**  
@@ -50,3 +52,22 @@ It is important to follow these norms to create a collaborative environment and 
 - **Absence Policy:**
   - Two absences will lead to a formal warning.
   - Three absences will be escalated for further action and reported.
+
+---
+
+ ## 5. Disputes
+
+- **Reasoning and Discussion:**  
+  In case members are not satisfied with any decision regarding design features, they should provide proper research-based reasoning for the same.  
+
+  All disputes should be discussed among the team members.
+
+---
+
+ ## 6. Feedback and Conflict Resolution
+
+- **Constructive Feedback:**  
+  Feedback should be constructive to improve the project outcome.
+
+- **Conflict Escalation:**  
+  All unresolved issues should be escalated to Aakriti Gurung, Abdul Rehman, Ismail Sohail, Sammer Shabbir, or the Product Manager, Bhowan Khawas.
