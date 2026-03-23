@@ -34,8 +34,11 @@ class ItemDetail {
         } catch (err) {
             console.error("❌ Model Error in ItemDetail.getFullInfo: ", err.message);
             throw err;
+
         }
+
     }
+
 }
 
 module.exports = ItemDetail;
