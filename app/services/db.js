@@ -37,12 +37,13 @@ async function query(sql, params = []) {
   }
 
 }
+
 // 5. TEST THE CONNECTION (Immediate feedback in terminal)
 pool.getConnection()
     .then(conn => {
         console.log("✅ Database Connected successfully!");
         conn.release();
-        
+
     })
     .catch(err => {
         console.log("❌ Database Connection Failed");
