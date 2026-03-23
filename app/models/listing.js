@@ -67,6 +67,7 @@ class Listing {
             throw err;
         }
     }
+    
     // ==========================================
     // USER PROFILE ITEMS (Updated to join your image table)
     // ==========================================
