@@ -35,8 +35,8 @@ async function query(sql, params = []) {
     console.error("❌ SQL Execution Error:", err.message);
     throw err; 
   }
-}
 
+}
 // 5. TEST THE CONNECTION (Immediate feedback in terminal)
 pool.getConnection()
     .then(conn => {
@@ -46,6 +46,7 @@ pool.getConnection()
     .catch(err => {
         console.log("❌ Database Connection Failed");
         console.log("Error:", err.message);
+        
     });
 
 module.exports = { query };
