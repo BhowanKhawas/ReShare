@@ -16,6 +16,7 @@ class Listing {
                 data.condition || "Good", // If 'condition' is missing, it uses 'Good'
                 userId
             ];
+            
             try {
                 const result = await db.query(sqlListing, paramsListing);
                 const newListingId = result.insertId;
