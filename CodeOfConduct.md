@@ -23,3 +23,30 @@ It is important to follow these norms to create a collaborative environment and 
 
 - **Updates and Blockers:**  
   Team members are expected to keep the team updated on their progress on tasks, blockers in their work, and delays in their work.
+
+  ---
+
+## 3. Accountability
+
+- **Feedback in Meetings:**  
+  Members should provide feedback on their tasks in meetings, discussing their progress and challenges faced.
+
+- **Addressing Delays:**  
+  If there is no progress on a task, the member should discuss the reasons for the delay and the actions being taken to overcome the delay.
+
+- **Reporting Delays:**  
+  If there is significant delay without a valid reason, the delay will be reported and addressed according to project procedures.
+
+---
+
+## 4. Meeting Etiquette
+
+- **Punctuality:**  
+  All members are expected to be punctual and prepared for all meetings.
+
+- **Consequences for Lateness:**  
+  In case a member is late to the meeting, he or she should be responsible for bringing treats to the team.
+
+- **Absence Policy:**
+  - Two absences will lead to a formal warning.
+  - Three absences will be escalated for further action and reported.
