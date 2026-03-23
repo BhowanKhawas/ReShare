@@ -7,6 +7,8 @@
 * **Module Code:** CMP-N204-0
 * **Assessment Type:** Group Project
 * **Academic Year:** 2025–2026
+* **Project Name:** ReShare
+* **Group Name:** Inferno
 
 ---
 
