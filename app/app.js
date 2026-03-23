@@ -380,9 +380,9 @@ app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
     }
 });
 
-// ==========================================
+// =========================================
 // 8. RAW DATA API ROUTES (For Dev/Testing)
-// ==========================================
+// =========================================
 app.get("/LISTINGS", (req, res) => {
     db.query('SELECT * FROM LISTINGS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
 });
