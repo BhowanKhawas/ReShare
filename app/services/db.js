@@ -42,11 +42,12 @@ pool.getConnection()
     .then(conn => {
         console.log("✅ Database Connected successfully!");
         conn.release();
+        
     })
     .catch(err => {
         console.log("❌ Database Connection Failed");
         console.log("Error:", err.message);
-        
+
     });
 
 module.exports = { query };
