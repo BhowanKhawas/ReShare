@@ -371,6 +371,7 @@ app.post("/admin/update-item/:id", isAdmin, async (req, res) => {
     }
 });
 
+
 app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
     try {
         await Admin.deleteListing(req.params.id);
