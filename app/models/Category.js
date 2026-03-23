@@ -12,7 +12,6 @@ class Category {
             GROUP BY C.category_id, C.name
             ORDER BY C.name ASC
         `;
-        
         try {
             const results = await db.query(sql);
             return results;
