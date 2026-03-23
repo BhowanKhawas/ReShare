@@ -100,32 +100,6 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 * **[Week 1: Docker Setup & Installation Process](week1.md)**
 
-### Users Table
-* user_id (Primary Key)
-* name
-* email
-...
-
-### Users Table
-
-* user_id (Primary Key)
-* name
-* email
-* password_hash
-* created_at
-
-### Items Table
-
-* item_id (Primary Key)
-* title
-* description
-* category
-* image_path
-* location
-* user_id (Foreign Key)
-* created_at
-
----
 
 ## Development Methodology
 
