@@ -88,6 +88,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 ## System Architecture
 
+
 * *Frontend:* PUG templates rendered by Express
 * *Backend:* RESTful routes built with Express.js
 * *Database:* MySQL for persistent data storage
