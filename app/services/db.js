@@ -38,6 +38,7 @@ async function query(sql, params = []) {
 
 }
 
+
 // 5. TEST THE CONNECTION (Immediate feedback in terminal)
 pool.getConnection()
     .then(conn => {
