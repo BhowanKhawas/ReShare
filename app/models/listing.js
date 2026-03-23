@@ -25,7 +25,6 @@ class Listing {
                     INSERT INTO LISTING_IMAGES (listing_id, image_url)
                     VALUES (?, ?)
                 `;
-                
                 // FIX: Ensure image_url is not undefined
                 const imageUrl = data.image_url || '/images/default.jpg';
                 
@@ -37,7 +36,6 @@ class Listing {
                 throw err;
             }
         }
-
     // 2. Existing markAsClaimed method
     static async markAsClaimed(listingId, claimerId) {
         try {
