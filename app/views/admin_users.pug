@@ -1,0 +1,31 @@
+doctype html
+html
+    head
+        title User Directory | ReShare Admin
+        link(rel="stylesheet", href="/style.css")
+    body
+        .wrapper
+            include ./includes/nav.pug
+            .container
+                .page-header
+                    h1 🛡️ Community Management
+                    p.subtitle Monitor and manage all registered neighbors.
+
+                .table-responsive(style="margin-top: 30px; background: white; border-radius: 15px; overflow: hidden; box-shadow: var(--shadow-sm);")
+                    table(style="width: 100%; border-collapse: collapse; text-align: left;")
+                        thead(style="background: var(--navy-dark); color: white;")
+                            tr
+                                th(style="padding: 15px;") Name
+                                th(style="padding: 15px;") Email
+                                th(style="padding: 15px;") Role
+                                th(style="padding: 15px;") Gifted Count
+                                th(style="padding: 15px;") Member Since
+                        tbody
+                            each user in users
+                                tr(style="border-bottom: 1px solid #eee;")
+                                    td(style="padding: 15px; font-weight: 700;") #{user.name}
+                                    td(style="padding: 15px; color: #64748B;") #{user.email}
+                                    td(style="padding: 15px;") 
+                                        span.badge(class=user.role === 'admin' ? 'admin-role' : 'user-role') #{user.role}
+                                    td(style="padding: 15px; font-weight: 800; color: var(--primary);") #{user.items_gifted_count || 0} 🎁
+                                    td(style="padding: 15px; font-size: 0.85rem;") #{new Date(user.created_at).toLocaleDateString()}

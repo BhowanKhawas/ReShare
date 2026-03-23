@@ -1,0 +1,46 @@
+doctype html
+html(lang="en")
+    head
+        title Share an Item | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+            
+            .container
+                h1.share-title 🎁 Share with your Neighbors
+
+                .share-form-card
+                    form(action="/add-item" method="POST" enctype="multipart/form-data")
+                        .form-group
+                            label What are you sharing?
+                            input(type="text" name="title" placeholder="e.g., Vintage Coffee Grinder" required)
+                        
+                        .form-group
+                            label Tell us about it
+                            textarea(name="description" rows="4" placeholder="Describe its condition..." required)
+                        
+                        //- --- INSERT CATEGORY HERE ---
+                        .form-group
+                            label Category
+                            select(name="category_id")
+                                option(value="1") 🏠 Household
+                                option(value="2") 🧸 Toys & Games
+                                option(value="3") 📚 Books
+                                option(value="4") 👕 Clothing
+
+                        //- --- INSERT CONDITION HERE ---
+                        .form-group
+                            label Condition
+                            select(name="condition")
+                                option(value="New") ✨ Brand New
+                                option(value="Good" selected) 👍 Good
+                                option(value="Fair") 🛠️ Needs Love
+                        
+                        .form-group
+                            label Choose a photo from your device
+                            input(type="file" name="item_image" accept="image/*")
+
+                        button.btn-post-item(type="submit") Post to Marketplace 🚀
+                        
+                        a.btn-cancel(href="/user/me") Cancel and go back

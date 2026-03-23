@@ -1,24 +1,63 @@
 doctype html
 html(lang="en")
     head
-        title User Profile | ReShare
+        title Profile: #{user.name} | ReShare
         link(rel="stylesheet", href="/style.css")
     body
         div.wrapper
             include ./includes/nav.pug
-            h1.page-title Settings: #{user.name}
+            
+            .container
+                h1.page-title Member Profile: #{user.name}
 
-            .form-container
-                .form-card
-                    h3 Account Details
-                    p Email: #{user.email}
-                    p Role: #{user.role}
-                    
-                    hr
-                    form(action="/update-name", method="POST")
-                        input(type="hidden", name="user_id", value=user.user_id)
-                        div.form-group
-                            label(for="newName") Change Display Name:
-                            input(type="text", name="newName", value=user.name, required)
-                        if session && session.role == 'admin'
-                            button(type="submit") Update Name
+                .profile-dashboard-grid
+                    //- LEFT COLUMN: Account Settings
+                    .settings-sidebar
+                        .form-card.profile-card
+                            //- Added a safety check: If name exists use the first letter, otherwise show '?'
+                            .profile-avatar #{user.name ? user.name.charAt(0).toUpperCase() : '?'}
+                            
+                            h3 Account Details
+                            p.profile-email 
+                                strong Email: 
+                                | #{user.email}
+                            
+                            .gift-count-display
+                                span 🎁
+                                | Gifted #{user.items_gifted_count || 0} items
+                            
+                            hr.divider
+                            
+                            form(action="/update-name", method="POST")
+                                input(type="hidden", name="user_id", value=user.user_id)
+                                .form-group
+                                    label(for="newName") Change Display Name
+                                    input(type="text", name="newName", value=user.name, required)
+                                
+                                button.btn-update(type="submit") Update Profile
+                            
+                            a.btn-logout(href="/logout") Logout of Account
+
+                    //- RIGHT COLUMN: Shared Items History
+                    .history-main
+                        h3.section-subtitle 📦 My Shared Items
+                        
+                        if listings && listings.length > 0
+                            .listings-grid
+                                each item in listings
+                                    .item-card
+                                        .item-img-container
+                                            //- Fixed the line break crash here!
+                                            img.item-img(src=item.image_url || 'https://placehold.co/400x300')
+                                            span.badge(class=item.status) #{item.status}
+                                        .item-body
+                                            h4.item-title #{item.title}
+                                            a.btn-outline(href=`/item/${item.listing_id}`) View Listing
+                        else
+                            .empty-state
+                                p You haven't shared any items yet.
+                                a.btn-green(href="/add-item") Start Sharing Now
+
+                .user-story-banner
+                    strong User Story: 
+                    | "As a user, I want to see my profile and history so I can manage my contributions."

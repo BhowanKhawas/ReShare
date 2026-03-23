@@ -1,58 +1,23 @@
 /**
  * ReShare - Main Application Entry Point
  * Folder Location: /app/app.js
- * Group Name: Inferno [cite: 5]
- * Description: community-based web application to reduce household waste [cite: 20]
+ * Group Name: Inferno
+ * Description: community-based web application to reduce household waste
  */
 
 const path = require("path");
 const express = require("express");
 const app = express();
 
-// --- SESSIONS & AUTHENTICATION SETUP ---
-// Manages user login states using express-session [cite: 132, 155]
-var session = require('express-session');
-app.use(session({
-  secret: 'secretkeysdfjsflyoifasd',
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false } // Set to true if using HTTPS [cite: 132]
-}));
-
-// Global Middleware: Automatic Role Verification
-app.use(async (req, res, next) => {
-    // 1. Maintain your temporary login for development
-    req.session.uid = 11; 
-    req.session.loggedIn = true;
-
-    try {
-        // 2. AUTOMATIC CHECK: Pull the real role from the DB for User 11
-        const { User } = require('./models/user');
-        const role = await User.getRole(req.session.uid);
-        
-        // 3. Assign the actual role from the DB to the session
-        req.session.role = role; 
-        
-        // Expose to Pug templates
-        res.locals.session = req.session;
-        next();
-    } catch (err) {
-        console.error("Middleware Auth Error:", err);
-        req.session.role = 'user'; // Safe fallback
-        next();
-    }
-});
-
-// 1. ENVIRONMENT CONFIGURATION
-// Loads variables from .env to ensure identical configurations in Docker [cite: 53]
+// ==========================================
+// 1. ENVIRONMENT & IMPORTS
+// ==========================================
 require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
-// 2. IMPORTS (The 'Model' and 'Service' layers)
-// Models encapsulate data logic and MySQL schema enforcement [cite: 46-47]
 const db = require('./services/db'); 
-const { User } = require('./models/user');
+const { User } = require('./models/User'); // Only ONE User import!
 const Listing = require('./models/listing'); 
-const Browse = require('./models/browse');
+const Browse = require('./models/Browse');
 const ItemDetail = require('./models/ItemDetail');
 const Community = require('./models/Community');
 const Category = require('./models/Category'); 
@@ -61,172 +26,84 @@ const About = require('./models/About');
 const Chat = require('./models/Chat'); 
 const Inbox = require('./models/Inbox');
 const Admin = require('./models/Admin');
+const multer = require('multer');
+const upload = multer({ dest: 'app/public/images/' });
 
-/**
- * HOME PAGE ROUTE (Controller)
- * Fetches featured items (Exchanges & Sales) for the landing page grid [cite: 43]
- */
-app.get("/", async (req, res) => {
-    // 1. Security: If not logged in, go to login page
-    if (!req.session.uid) {
-        return res.redirect("/login");
-    }
-
-    try {
-        // 2. Fetch only the items you want (assuming 'exchanges' are your free items)
-        const exchanges = await Index.getRecentExchanges();
-        
-        // 3. Render and pass the data
-        res.render("index", { 
-            exchangeItems: exchanges,
-            session: req.session 
-        });
-    } catch (err) {
-        console.error("Home Route Error:", err.message);
-        res.status(500).send("Error loading home page. Check if Index model functions exist.");
-    }
-});
-
-// 3. MIDDLEWARE SETUP
-// Essential for capturing data from PUG forms for processing [cite: 30-33]
+// ==========================================
+// 2. SETUP & MIDDLEWARE
+// ==========================================
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views')); 
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// 4. VIEW ENGINE SETUP (The 'View' layer)
-// PUG serves as the templating engine for ReShare [cite: 33, 45]
-app.set('view engine', 'pug');
+// Session Management
+var session = require('express-session');
+app.use(session({
+    secret: 'secretkeysdfjsflyoifasd',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } 
+}));
 
-// This path configuration ensures compatibility within the Docker environment [cite: 53-54]
-app.set('views', path.join(__dirname, 'views')); 
-
-// Serve static files (Logo, CSS, Images) from the public folder [cite: 32]
-app.use(express.static(path.join(__dirname, 'public')));
-
-// ==========================================
-// FRONT-END PAGE ROUTES (View Controllers)
-// ==========================================
-
-/**
- * ROOT REDIRECT
- * Redirects guests to login and authenticated users to home [cite: 155, 172-174]
- */
-app.get("/", function(req, res) {
-    if (req.session.uid) {
-        res.render("index");
-    } else {
-        res.redirect("/login");
+// Global Role & Dev Login Middleware
+app.use(async (req, res, next) => {
+    // 1. Check if session exists. 
+    // If not logged in, we set uid to null (NOT a fake number like 1 or 11)
+    if (!req.session.uid) {
+        req.session.uid = null; 
+        req.session.loggedIn = false;
     }
-    res.end();
-});
-
-app.get("/login", function(req, res){
-    res.render("login");
-});
-
-/**
- * CREATE LISTING VIEW
- * Renders the form for users to post a new community item [cite: 127, 149]
- */
-app.get("/list-item", (req, res) => res.render("listing"));
-
-/**
- * SINGLE USER PROFILE VIEW
- * Displays transparency and profile-based listing retrieval [cite: 51, 129]
- */
-app.get("/user/:id", async function (req, res) {
-    const userId = req.params.id;
-    const sql = "SELECT * FROM USERS WHERE user_id = ?";
 
     try {
-        const results = await db.query(sql, [userId]);
-        if (results.length > 0) {
-            res.render('user', { user: results[0], session: req.session }); 
+        // 2. ONLY call the Model if we actually have a user ID
+        if (req.session.uid) {
+            const role = await User.getRole(req.session.uid);
+            req.session.role = role || 'user'; 
         } else {
-            res.status(404).send("User not found in ReShare.");
+            // 3. If no ID, they are a guest. No database query needed!
+            req.session.role = 'guest';
         }
+        
+        res.locals.session = req.session;
+        next();
     } catch (err) {
-        console.error(err);
-        res.status(500).send("Error accessing database.");
+        // 4. If the database fails, log it but let the server live
+        console.error("Auth Middleware Error:", err.message);
+        req.session.role = 'guest'; 
+        res.locals.session = req.session;
+        next(); 
     }
 });
 
-// ==========================================
-// BACK-END LOGIC ROUTES (Controllers)
-// ==========================================
-
-/**
- * UPDATE USER LOGIC
- * Interacts with User Model to update persistent data [cite: 158]
- */
-app.post("/update-user-name", async function (req, res) {
-    const { user_id, newName } = req.body; 
-    const userModel = new User(user_id);
-
-    try {
-        await userModel.updateName(newName); 
-        res.redirect(`/user/${user_id}`); 
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Failed to update name.");
+// Admin Guard Middleware
+const isAdmin = (req, res, next) => {
+    if (req.session.role === 'admin') {
+        next(); 
+    } else {
+        res.status(403).send("Access Denied: You do not have Admin permissions.");
     }
-});
-
-/**
- * ADD LISTING LOGIC
- * Saves new community items to the MySQL database [cite: 46, 127]
- */
-app.post("/add-listing", async (req, res) => {
-    try {
-        await Listing.create(req.body);
-        res.redirect("/LISTINGS"); 
-    } catch (err) {
-        console.error(err);
-        res.status(500).send("Error saving your listing.");
-    }
-});
+};
 
 // ==========================================
-// API / DATABASE TEST ROUTES
+// 3. PUBLIC & AUTH ROUTING
 // ==========================================
 
-app.get("/LISTINGS", function(req, res) {
-    db.query('SELECT * FROM LISTINGS')
-        .then(results => res.json(results))
-        .catch(err => res.status(500).send("Database connection failed.")); 
-});
+app.get("/login", (req, res) => res.render("login"));
 
-app.get("/USERS", function(req, res) {
-    db.query('SELECT * FROM USERS')
-        .then(results => res.json(results))
-        .catch(err => res.status(500).send("Database connection failed.")); 
-});
-
-// ==========================================
-// AUTHENTICATION ROUTES (Sprint 3 Focus)
-// ==========================================
-
-/**
- * SIGNUP VIEW
- * Loads community locations to help users mask their position [cite: 220, 767]
- */
 app.get("/signup", async (req, res) => {
     try {
         const locations = await db.query("SELECT location_id, city, region FROM LOCATIONS");
         res.render("signup", { locations: locations });
     } catch (err) {
-        console.error("Error loading locations:", err);
         res.status(500).send("Error loading signup page.");
     }
 });
 
-/**
- * SET PASSWORD / REGISTRATION
- * Uses password hashing to protect user data privacy [cite: 132, 215, 764]
- */
 app.post('/set-password', async (req, res) => {
     const { name, email, location, password } = req.body;
     const user = new User(email, name, location);
-
     try {
         const uId = await user.getIdFromEmail();
         if (uId) {
@@ -237,19 +114,13 @@ app.post('/set-password', async (req, res) => {
             res.redirect('/login'); 
         }
     } catch (err) {
-        console.error(`Error while adding user:`, err.message);
         res.status(500).send('Server error during signup');
     }
 });
 
-/**
- * AUTHENTICATE / LOGIN
- * Verifies credentials and creates a secure session [cite: 155, 174]
- */
 app.post('/authenticate', async (req, res) => {
     const { email, password } = req.body; 
     const user = new User(email); 
-    
     try {
         const uId = await user.getIdFromEmail();
         if (uId) {
@@ -258,7 +129,7 @@ app.post('/authenticate', async (req, res) => {
                 req.session.uid = uId;
                 req.session.loggedIn = true;
                 req.session.role = user.role;
-                res.redirect('/user/' + uId);
+                res.redirect('/'); // Go to Home on success
             } else {
                 res.send('Invalid password.');
             }
@@ -266,262 +137,240 @@ app.post('/authenticate', async (req, res) => {
             res.send('Invalid email.');
         }
     } catch (err) {
-        console.error(`Auth Error: `, err.message);
         res.status(500).send("Login error occurred.");
     }
 });
 
-// DESTROY SESSION
-app.get('/logout', function (req, res) {
+app.get('/logout', (req, res) => {
     req.session.destroy();
     res.redirect('/login');
 });
 
 // ==========================================
-// MAIN APP VIEWS
+// 4. CORE APPLICATION ROUTES (GET)
 // ==========================================
 
-/**
- * BROWSE MARKETPLACE
- * Displays all available community items for reuse [cite: 125, 140]
- */
+// HOME
+app.get("/", async (req, res) => {
+    if (!req.session || !req.session.uid) return res.redirect("/login");
+    try {
+        const exchanges = await Index.getRecentExchanges();
+        res.render("index", { exchangeItems: exchanges, session: req.session });
+    } catch (err) {
+        res.status(500).send("Error loading home page.");
+    }
+});
+
+// BROWSE
 app.get("/browse", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
     try {
         const categoryId = req.query.category;
-        
-        // 1. Fetch filtered items based on ID
         const items = await Browse.getAllItems(categoryId);
-        
-        // 2. Fetch the actual categories list for the filter bar
         const categories = await db.query("SELECT * FROM CATEGORIES");
-        
-        res.render("browse", { 
-            items: items, 
-            categories: categories, // Send this to Pug
-            selectedCategory: categoryId 
-        });
+        res.render("browse", { items, categories, selectedCategory: categoryId });
     } catch (err) {
         res.status(500).send("Error loading browse page.");
     }
 });
 
-/**
- * ITEM DETAILS CONTROLLER
- * Fetches specific item data based on the listing_id in the URL
- */
+// ITEM DETAIL
 app.get("/item/:id", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
     try {
-        const itemId = req.params.id;
-        
-        // MVC: Controller requests specific data from the ItemDetail Model
-        const itemData = await ItemDetail.getFullInfo(itemId);
-        
+        const itemData = await ItemDetail.getFullInfo(req.params.id);
         if (itemData) {
-            // Render the View and pass the 'item' object
-            res.render("itemdetail", { item: itemData });
+            res.render("itemdetail", { item: itemData, session: req.session, query: req.query });
         } else {
-            res.status(404).send("Item not found in ReShare database.");
+            res.status(404).send("Item not found.");
         }
     } catch (err) {
-        console.error("Controller Error (Item Detail):", err);
         res.status(500).send("Error loading item details.");
     }
 });
 
-/**
- * COMMUNITY LIST
- * Encourages trust and transparency within the neighborhood [cite: 130, 145]
- */
-app.get("/community", async (req, res) => {
+// USER PROFILE (With Error Exposer)
+app.get("/user/:id", async (req, res) => {
     try {
-        const members = await Community.getAllMembers();
-        res.render("community", { users: members });
+        const userId = req.params.id;
+        
+        if (userId === "me" || !userId) {
+            if (req.session.uid) return res.redirect("/user/" + req.session.uid);
+            return res.redirect("/login");
+        }
+        
+        const userData = await User.getById(userId);
+        if (!userData) {
+            return res.send("DEBUG ERROR: User ID was not found in the database."); 
+        }
+
+        const userListings = await Listing.getByUserId(userId); 
+        res.render("user", { user: userData, listings: userListings, session: req.session });
+        
     } catch (err) {
-        console.error("Controller Error:", err);
-        res.status(500).send("Error loading the community page.");
+        // THIS PRINTS THE CRASH TO YOUR SCREEN
+        console.error("PROFILE ROUTE CRASH:", err);
+        res.send("<h1>Profile Crash Detected!</h1><p><b>Error Message:</b> " + err.message + "</p>");
     }
 });
 
-/**
- * CATEGORIES
- * Allows discovery and filtering of essential household items [cite: 153]
- */
+
+// SECONDARY PAGES (Categories, Community, About)
 app.get("/categories", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
     try {
         const categoryData = await Category.getCategoryCounts();
-        
-        // This 'categories' key must match the 'each cat in categories' in your pug
         res.render("categories", { categories: categoryData });
     } catch (err) {
-        console.error("Controller Error:", err);
         res.status(500).send("Error loading categories page.");
     }
 });
 
-/**
- * ABOUT & TEAM
- * Outlines Inferno Group roles and the platform mission [cite: 5-11, 20-21]
- */
-app.get("/about", async (req, res) => {
+app.get("/community", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
     try {
-        const team = await About.getTeamMembers();
-        res.render("about", { teamMembers: team });
+        const members = await Community.getAllMembers();
+        res.render("community", { users: members });
     } catch (err) {
-        console.error("Controller Error (About):", err);
-        res.status(500).send("Error loading the about page.");
+        res.status(500).send("Error loading community page.");
     }
 });
 
-
-/**
- * CHAT REQUEST CONTROLLER
- * Handles the logic when a user clicks "Request to Chat"
- */
-app.post("/request-chat/:id", async (req, res) => {
-    // Security check: Make sure the user is actually logged in
-    if (!req.session.uid) {
-        return res.redirect('/login');
-    }
-
-    const listingId = req.params.id;
-    const requesterId = req.session.uid;
-
+app.get("/about", async (req, res) => {
     try {
-        // MVC: Controller asks the Model to create the database entries
-        await Chat.createConversation(listingId, requesterId);
-        
-        // Redirect straight to the Inbox!
+        const team = await About.getTeamMembers();
+        res.render("about", { teamMembers: team, session: req.session });
+    } catch (err) {
+        res.status(500).send("Error loading about page.");
+    }
+});
+
+// ==========================================
+// 5. CORE APPLICATION ROUTES (POST / Actions)
+// ==========================================
+
+// ADD ITEM (Form View)
+app.get("/add-item", (req, res) => {
+    // Safety check: only logged-in users can see this page
+    if (!req.session.uid) {
+        return res.redirect("/login");
+    }
+    // Render the 'add_item.pug' file
+    res.render("add_item", { session: req.session });
+});
+
+// UPDATE PROFILE NAME
+app.post("/update-name", async (req, res) => {
+    const { user_id, newName } = req.body;
+    try {
+        const userInstance = new User();
+        userInstance.user_id = user_id; 
+        await userInstance.updateName(newName);
+        req.session.name = newName;
+        res.redirect(`/user/${user_id}`); 
+    } catch (err) {
+        res.status(500).send("Error updating profile name.");
+    }
+});
+
+// MARK ITEM AS CLAIMED
+app.post("/mark-claimed/:id", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
+    try {
+        await Listing.markAsClaimed(req.params.id, req.session.uid); 
+        res.redirect(`/item/${req.params.id}?success=claimed`);
+    } catch (err) {
+        res.status(500).send("Error updating listing status.");
+    }
+});
+
+// ==========================================
+// 6. MESSAGING & CHAT ROUTES
+// ==========================================
+
+app.post("/request-chat/:id", async (req, res) => {
+    if (!req.session.uid) return res.redirect('/login');
+    try {
+        await Chat.createConversation(req.params.id, req.session.uid);
         res.redirect('/inbox');
     } catch (err) {
-        console.error("Controller Error (Chat Request):", err);
         res.status(500).send("Could not process chat request.");
     }
 });
 
-/**
- * CHAT ROOM CONTROLLERS
- */
-// 1. Load the Chat Room page
-app.get('/chat/:id', async (req, res) => {
-    if (!req.session.uid) return res.redirect('/login');
-    
-    try {
-        const convoId = req.params.id;
-        const userId = req.session.uid;
-
-        // Verify access and get details
-        const chatDetails = await Chat.getChatDetails(convoId, userId);
-        if (!chatDetails) {
-            return res.status(403).send("You do not have permission to view this chat.");
-        }
-
-        // Get all text messages
-        const messages = await Chat.getMessages(convoId);
-
-        // Figure out the name of the person you are talking to
-        const isOwner = userId === chatDetails.owner_id;
-        const chattingWith = isOwner ? chatDetails.requester_name : chatDetails.owner_name;
-
-        res.render('chat', { 
-            chatDetails, 
-            messages, 
-            currentUserId: userId,
-            chattingWith 
-        });
-    } catch (err) {
-        console.error("Error loading chat:", err);
-        res.status(500).send("Could not load the chat room.");
-    }
-});
-
-// 2. Handle sending a new message
-app.post('/chat/:id/send', async (req, res) => {
-    if (!req.session.uid) return res.redirect('/login');
-    
-    try {
-        const convoId = req.params.id;
-        const text = req.body.message_text; // Matches the 'name' attribute in the HTML form
-        
-        if (text && text.trim().length > 0) {
-            await Chat.sendMessage(convoId, req.session.uid, text);
-        }
-        
-        // Redirect back to the same chat room so the new message appears instantly
-        res.redirect(`/chat/${convoId}`);
-    } catch (err) {
-        console.error("Error sending message:", err);
-        res.status(500).send("Could not send your message.");
-    }
-});
-
-/**
- * INBOX CONTROLLER
- * Loads all active chats for the logged-in user
- */
 app.get('/inbox', async (req, res) => {
-    // MVC: Controller uses session ID to fetch conversations
-    const userId = req.session.uid; 
-
+    if (!req.session.uid) return res.redirect('/login');
     try {
-        const conversations = await Inbox.getUserConversations(userId);
-        res.render('inbox', { 
-            conversations: conversations,
-            currentUserId: userId 
-        });
+        const conversations = await Inbox.getUserConversations(req.session.uid);
+        res.render('inbox', { conversations: conversations, currentUserId: req.session.uid });
     } catch (err) {
-        console.error("Inbox Route Error:", err);
         res.status(500).send("Could not load inbox.");
     }
 });
 
-// ==========================================
-// ADMIN & MODERATION LOGIC (MVC Guard)
-// ==========================================
+app.get('/chat/:id', async (req, res) => {
+    if (!req.session.uid) return res.redirect('/login');
+    try {
+        const convoId = req.params.id;
+        const userId = req.session.uid;
+        const chatDetails = await Chat.getChatDetails(convoId, userId);
+        
+        if (!chatDetails) return res.status(403).send("Permission denied.");
 
-// 1. The Guard: Standalone function to verify Admin role
-const isAdmin = (req, res, next) => {
-    if (req.session.role === 'admin') {
-        next(); 
-    } else {
-        res.status(403).send("Access Denied: You do not have Admin permissions.");
+        const messages = await Chat.getMessages(convoId);
+        const chattingWith = (userId === chatDetails.owner_id) ? chatDetails.requester_name : chatDetails.owner_name;
+
+        res.render('chat', { chatDetails, messages, currentUserId: userId, chattingWith });
+    } catch (err) {
+        res.status(500).send("Could not load the chat room.");
     }
-};
+});
 
-/**
- * ROUTE: GET Admin Edit Form
- */
+app.post('/chat/:id/send', async (req, res) => {
+    if (!req.session.uid) return res.redirect('/login');
+    try {
+        const text = req.body.message_text; 
+        if (text && text.trim().length > 0) {
+            await Chat.sendMessage(req.params.id, req.session.uid, text);
+        }
+        res.redirect(`/chat/${req.params.id}`);
+    } catch (err) {
+        res.status(500).send("Could not send your message.");
+    }
+});
+
+// ==========================================
+// 7. ADMIN CONTROLS (Protected)
+// ==========================================
+
+app.get("/admin/users", isAdmin, async (req, res) => {
+    try {
+        const allUsers = await Admin.getAllUsers();
+        res.render("admin_users", { users: allUsers, session: req.session });
+    } catch (err) {
+        res.status(500).send("Error loading user directory.");
+    }
+});
+
 app.get("/admin/edit-item/:id", isAdmin, async (req, res) => {
     try {
-        const listing_id = req.params.id;
-        const item = await ItemDetail.getFullInfo(listing_id);
-        
-        // 👇 1. Fetch the list from the database
+        const item = await ItemDetail.getFullInfo(req.params.id);
         const categories = await db.query("SELECT * FROM CATEGORIES");
-        
-        // 👇 2. Send 'categories' to the Pug file
         res.render("admin_edit", { item, categories });
     } catch (err) {
         res.status(500).send("Error loading admin edit form.");
     }
 });
 
-/**
- * ROUTE: POST Admin Update (Rewrite)
- */
 app.post("/admin/update-item/:id", isAdmin, async (req, res) => {
     try {
-        // MVC: Hand data from Controller to Admin Model
         await Admin.updateListing(req.params.id, req.body);
         res.redirect(`/item/${req.params.id}`); 
     } catch (err) {
-        console.error("Update Error:", err);
         res.status(500).send("Admin Update Failed.");
     }
 });
 
-/**
- * ROUTE: POST Admin Delete
- */
 app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
     try {
         await Admin.deleteListing(req.params.id);
@@ -531,24 +380,45 @@ app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
     }
 });
 
-/**
- * CLAIM ITEM CONTROLLER (Owner Only)
- */
-app.post("/mark-claimed/:listingId", async (req, res) => {
-    const { listingId } = req.params;
-    const { requesterId } = req.body;
+// ==========================================
+// 8. RAW DATA API ROUTES (For Dev/Testing)
+// ==========================================
+app.get("/LISTINGS", (req, res) => {
+    db.query('SELECT * FROM LISTINGS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
+});
+app.get("/USERS", (req, res) => {
+    db.query('SELECT * FROM USERS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
+});
+
+
+app.post("/add-item", upload.single('item_image'), async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
     try {
-        await Listing.markAsClaimed(listingId, requesterId);
-        res.redirect('/inbox');
+        const { title, description, category_id, condition } = req.body;
+        
+        // Use the filename generated by multer
+        const imagePath = req.file ? `/images/${req.file.filename}` : 'https://placehold.co/400x300';
+
+        const newItemId = await Listing.create({
+            title, 
+            description, 
+            image_url: imagePath, 
+            category_id: category_id || 1, 
+            condition: condition || 'Good'
+        }, req.session.uid);
+
+        res.redirect(`/item/${newItemId}`);
     } catch (err) {
-        res.status(500).send("Failed to mark item as claimed.");
+        console.error("Upload Route Error:", err);
+        res.status(500).send("There was an error uploading your item.");
     }
 });
+
 
 // ==========================================
 // START SERVER
 // ==========================================
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, function(){
-    console.log(`ReShare Server active at http://127.0.0.1:${PORT}/`);
+    console.log(`🚀 ReShare Server active at http://127.0.0.1:${PORT}/`);
 });

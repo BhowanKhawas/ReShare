@@ -33,7 +33,6 @@ class User {
     async addUser(password) {
         const pw = await bcrypt.hash(password, 10);
 
-        // Safeguard to ensure no blank profiles are created
         if (!this.name || !this.email || !this.location_id) {
             throw new Error("Missing required signup fields");
         }
@@ -61,11 +60,10 @@ class User {
         
         if (!result || result.length === 0) return false;
 
-        // Compares the submitted password with the hashed version in the DB
         return await bcrypt.compare(submitted, result[0].password_hash);
     }
 
-    // 4. Included your updateName method for completeness (from your /update-user-name route)
+    // 4. Update name
     async updateName(newName) {
         if (!this.user_id) throw new Error("User ID is required to update name.");
         const sql = "UPDATE `USERS` SET `name` = ? WHERE `user_id` = ?";
@@ -73,22 +71,56 @@ class User {
         this.name = newName;
         return true;
     }
-    // --- ADD THIS METHOD TO YOUR USER CLASS ---
+
     /**
-     * Static method to fetch a user's role by ID
-     * Used by middleware for automatic admin verification
+     * STATIC METHOD: getRole
+     * This is Step 3: Preventing the 'undefined' crash loop.
      */
     static async getRole(userId) {
+        // 1. THE GUARD: If userId is empty, null, or undefined, 
+        // return 'guest' immediately without touching the database.
+        if (!userId || userId === 'undefined') {
+            return 'guest'; 
+        }
+
         const sql = "SELECT role FROM USERS WHERE user_id = ?";
+        try {
+            // 2. THE QUERY: Now it's safe to run because we know userId has a value.
+            const result = await db.query(sql, [userId]);
+            
+            // 3. THE FALLBACK: If user ID doesn't exist in the table, default to 'user'.
+            if (result && result.length > 0) {
+                return result[0].role; 
+            }
+            return 'user'; 
+        } catch (err) {
+            // 4. THE SAFETY: Catch database errors so they don't kill the server process.
+            console.error("Database error in User.getRole:", err.message);
+            return 'user';
+        }
+    }
+
+    // ==========================================
+    // NEW METHOD: Fetches profile data for the User View
+    // FIX: Added a check for !userId to prevent the "undefined" crash
+    // ==========================================
+    static async getById(userId) {
+        if (!userId) return null; // Safety check
+        const sql = `
+            SELECT u.user_id, u.name, u.email, u.role, 
+                   (SELECT COUNT(*) FROM LISTINGS WHERE user_id = u.user_id) as items_gifted_count
+            FROM USERS u
+            WHERE u.user_id = ?
+        `;
         try {
             const result = await db.query(sql, [userId]);
             if (result && result.length > 0) {
-                return result[0].role; // Returns 'admin' or 'user'
+                return result[0];
             }
-            return 'user'; // Fallback if user not found
+            return null;
         } catch (err) {
-            console.error("Database error in getRole:", err);
-            return 'user';
+            console.error("Error in User.getById:", err);
+            return null; // Don't throw, just return null so app stays up
         }
     }
 }

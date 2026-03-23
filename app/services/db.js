@@ -18,16 +18,27 @@ const config = {
   },
 };
 
-// 3. Create the Pool (Now it is defined!)
+// 3. Create the Pool
 const pool = mysql.createPool(config.db);
 
-// 4. Utility function for the Model to use
-async function query(sql, params) {
-  const [rows] = await pool.execute(sql, params);
-  return rows;
+
+// Utility function for the Model to use
+async function query(sql, params = []) {
+  // THE CRITICAL FIX: This line converts any 'undefined' variables into 'null'
+  // so the database driver doesn't crash the server.
+  const safeParams = params.map(p => typeof p === 'undefined' ? null : p);
+
+  try {
+    const [rows] = await pool.execute(sql, safeParams);
+    return rows;
+  } catch (err) {
+    // This logs the error to your terminal without killing the server
+    console.error("❌ SQL Execution Error:", err.message);
+    throw err; 
+  }
 }
 
-// 5. TEST THE CONNECTION (At the bottom, after pool is defined)
+// 5. TEST THE CONNECTION (Immediate feedback in terminal)
 pool.getConnection()
     .then(conn => {
         console.log("✅ Database Connected successfully!");
