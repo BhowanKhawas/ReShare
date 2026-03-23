@@ -99,7 +99,6 @@ class User {
             return 'user';
         }
     }
-
     // ==========================================
     // NEW METHOD: Fetches profile data for the User View
     // FIX: Added a check for !userId to prevent the "undefined" crash
@@ -124,5 +123,4 @@ class User {
         }
     }
 }
-
 module.exports = { User };
