@@ -1382,13 +1382,11 @@ nav {
     border: 2px solid #FEE2E2;
     border-radius: 15px;
 }
-
 .admin-btn-group {
     display: flex;
     gap: 15px;
     margin-top: 15px;
 }
-
 .btn-admin-edit {
     background: #E0E7FF;
     color: #4338CA;
@@ -1397,7 +1395,6 @@ nav {
     text-decoration: none;
     font-weight: bold;
 }
-
 .btn-admin-delete {
     background: #FEE2E2;
     color: #B91C1C;
@@ -1407,7 +1404,6 @@ nav {
     font-weight: bold;
     cursor: pointer;
 }
-
 /* User Story Banner */
 .user-story-banner {
     margin-top: 40px;
