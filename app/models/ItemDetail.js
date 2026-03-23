@@ -27,7 +27,6 @@ class ItemDetail {
             WHERE L.listing_id = ?
             LIMIT 1
         `;
-
         try {
             const rows = await db.query(sql, [itemId]);
             // Return the first matching item or null if not found

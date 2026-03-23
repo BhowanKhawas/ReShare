@@ -3,12 +3,11 @@ const db = require('../services/db');
 class Listing {
     // 1. Create a new listing (Uses BOTH tables now!)
     static async create(data, userId) {
-            // Step A: Save the main item details
+            // Step A: Save the main item details to LISTINGS
             const sqlListing = `
                 INSERT INTO LISTINGS (title, description, category_id, item_condition, user_id, status)
                 VALUES (?, ?, ?, ?, ?, 'available')
             `;
-            
             // FIX: Added fallbacks (||) so these are NEVER undefined
             const paramsListing = [
                 data.title || "Untitled Item", 
@@ -17,7 +16,6 @@ class Listing {
                 data.condition || "Good", // If 'condition' is missing, it uses 'Good'
                 userId
             ];
-
             try {
                 const result = await db.query(sqlListing, paramsListing);
                 const newListingId = result.insertId;
