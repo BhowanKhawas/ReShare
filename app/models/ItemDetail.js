@@ -33,7 +33,7 @@ class ItemDetail {
             // Return the first matching item or null if not found
             return rows.length > 0 ? rows[0] : null;
         } catch (err) {
-            console.error("❌ Model Error in ItemDetail.getFullInfo:", err.message);
+            console.error("❌ Model Error in ItemDetail.getFullInfo: ", err.message);
             throw err;
         }
     }
