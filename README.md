@@ -72,7 +72,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 
 ### Database
 
-* **MySQL** (relational database for structured data storage)
+* *MySQL* (relational database for structured data storage)
 
 ### DevOps & CI/CD
 
