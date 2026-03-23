@@ -63,7 +63,7 @@ The platform supports sustainable consumption, promotes environmental responsibi
 * HTML5
 * CSS3
 * JavaScript
-* **PUG templating engine**
+* PUG templating engine
 
 ### Backend
 
