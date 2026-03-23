@@ -1,0 +1,50 @@
+doctype html
+html
+    head
+        title About Us | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        .wrapper
+            include ./includes/nav.pug
+
+            //- 1. High-Impact Hero Section
+            section.about-hero
+                .container
+                    span.hero-badge Our Mission
+                    h1.page-title Sustainable Living, Simplified.
+                    p.hero-text ReShare is a community-based web application designed to reduce household waste and promote sustainable living by connecting people within local communities.
+
+            //- 2. The Core Philosophy (The "Heart" of the text)
+            section.about-philosophy
+                .container
+                    .philosophy-card
+                        h2 Beyond Second-Hand Selling
+                        p The platform allows users to list unwanted household items such as furniture, clothing, kitchenware, and electronics, making them available for others nearby to claim completely free of charge. 
+                        p.highlight Unlike second-hand selling platforms, ReShare removes the financial element entirely—the focus is purely on reuse, redistribution, and keeping usable items out of landfill.
+                        blockquote "One person's unwanted item becomes another person's useful one."
+
+            //- 3. How It Works Grid
+            section.about-how
+                .container
+                    h2.section-title How the Community Works
+                    .listings-grid
+                        .item-card.about-step
+                            .pill-icon 🔍
+                            h3 Browse & Filter
+                            p Users can browse available listings in their area, filter by category, and request items directly through the platform's built-in messaging system.
+                        
+                        .item-card.about-step
+                            .pill-icon 🤝
+                            h3 Connect & Collect
+                            p Once a claim is made, the two parties arrange collection between themselves, keeping the process straightforward and community-driven.
+                        
+                        .item-card.about-step
+                            .pill-icon 🌿
+                            h3 Think Twice
+                            p ReShare aims to make sustainable habits easy and practical for everyday life rather than something that requires extra effort or cost.
+
+            //- 4. Accessibility Statement (Footer of the page)
+            section.about-accessibility
+                .container
+                    .access-box
+                        p ReShare is built with accessibility and simplicity in mind, ensuring that anyone regardless of technical ability can register, browse, and participate.

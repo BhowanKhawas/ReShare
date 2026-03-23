@@ -1,0 +1,41 @@
+doctype html 
+html 
+    head 
+        title Browse Items | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+
+            .container
+                h2.page-title Browse Available Items
+                
+                //- 1. Search Bar Section
+                .search-container
+                    input.search-input(type="text" placeholder="Search for items in your community...")
+                
+                //- 2. Category Filter Bar
+                //- 2. Category Filter Bar (DYNAMIC)
+                .filter-bar
+                    //- "All Categories" link (resets the filter)
+                    a.filter-btn(href="/browse" class=(!selectedCategory ? 'active' : '')) All Categories
+                    
+                    //- Loop through the real categories from the DB
+                    each cat in categories
+                        a.filter-btn(
+                            href=`/browse?category=${cat.category_id}` 
+                            class=(selectedCategory == cat.category_id ? 'active' : '')
+                        ) #{cat.name}
+                //- 3. Results Grid
+                .listings-grid
+                    if items && items.length > 0
+                        each item in items
+                            .item-card
+                                img.item-img(src=item.image_url || 'https://placehold.co/400x300?text=No+Image', alt=item.title)
+                                .item-body
+                                    h3.item-title #{item.title}
+                                    p.item-meta #{item.category} • #{item.location || 'Roehampton'}
+                                    span.condition-badge(class=item.item_condition.toLowerCase().replace(' ', '-')) #{item.item_condition}
+                                    a.btn-outline(href=`/item/${item.listing_id}`) View Details
+                    else
+                        p.no-results No items found in this category.

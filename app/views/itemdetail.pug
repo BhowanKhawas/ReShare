@@ -1,0 +1,51 @@
+doctype html 
+html 
+    head 
+        title #{item.title} | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+            
+            .main-content-bg
+                .product-showcase
+                    .left-column
+                        img.item-photo(src=item.image_url ? item.image_url : 'https://placehold.co/600x600/E6F7F1/00D4A0?text=No+Photo', alt=`Photo of ${item.title}`)
+                    
+                    .right-column
+                        h2.item-heading #{item.title}
+                        
+                        .info-card
+                            p <strong>Category:</strong> #{item.category_name || 'General'}
+                            p <strong>Condition:</strong> #{item.item_condition || 'Used'}
+                            p <strong>Location:</strong> #{item.location_name || 'Unknown'} (approx.)
+                            p <strong>Posted:</strong> #{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
+                            
+                        .info-card
+                            h3 Description:
+                            p #{item.description}
+                            
+                        .info-card
+                            h3 Listed by:
+                            .owner-profile
+                                .avatar #{item.owner_name ? item.owner_name.charAt(0).toUpperCase() : '?'}
+                                div
+                                    p.owner-name #{item.owner_name || 'Anonymous User'}
+                                    a.profile-link(href=`/user/${item.user_id}`) View Profile →
+
+                        form(action=`/request-chat/${item.listing_id}` method="POST")
+                            button.btn-green(type="submit") Request to Chat
+
+                //- Admin Section
+                if session.role === 'admin'
+                    .admin-zone
+                        h3 🛡️ Admin Master Controls
+                        .admin-btn-group
+                            a.btn-edit(href=`/admin/edit-item/${item.listing_id}`) Edit / Rewrite Listing
+                            
+                            form(action=`/admin/delete-item/${item.listing_id}` method="POST" onsubmit="return confirm('WARNING: This will delete everything. Continue?')")
+                                button.btn-delete(type="submit") Delete Permanently
+
+                .user-story-banner
+                    strong User Story: 
+                    | "As a user, I want to view a detailed page for each item..."

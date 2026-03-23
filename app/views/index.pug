@@ -1,0 +1,43 @@
+doctype html 
+html 
+    head 
+        title Home | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+
+            .container
+                //- 1. High-quality Hero Banner
+                .hero-wrapper
+                    img.hero-banner(src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1200&auto=format&fit=crop", alt="People collaborating")
+                    .hero-overlay
+                        h1 Give. Swap. ReShare.
+                
+                h2.page-title Exchange Items
+                
+                //- 2. The side-by-side grid
+                .listings-grid
+                    if exchangeItems && exchangeItems.length > 0
+                        each item in exchangeItems
+                            .item-card
+                                .item-img-container
+                                    img.item-img(src=item.image_url ? item.image_url : "https://placehold.co/400x250/E6F7F1/00D4A0?text=Item+Photo", alt=item.title)
+                                    span.badge #{item.category || 'General'}
+                                
+                                .item-body
+                                    h3.item-title #{item.title}
+                                    p.item-condition
+                                        strong Condition: 
+                                        | #{item.item_condition || 'Used'}
+                                    p.item-description #{item.description}
+                                    
+                                    a.btn(href=`/item/${item.listing_id}`) View Details
+                    else
+                        .empty-state
+                            p No items are currently available for exchange. Check back soon!
+
+            //- 3. Mission Statement
+            .user-story
+                strong Our Mission: 
+                | "As a user looking for useful household items, I want to browse listings so that I can quickly find items that are relevant and nearby, promoting sustainable living."

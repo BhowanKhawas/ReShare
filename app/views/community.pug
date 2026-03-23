@@ -1,0 +1,31 @@
+doctype html 
+html 
+    head 
+        title Community | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+
+            .container
+                h2.page-title Community Members
+                p.page-description Browse neighbors who are actively giving back to the community.
+                
+                .listings-grid
+                    if users && users.length > 0
+                        each user in users
+                            .item-card
+                                //- Generates a circular avatar with the first letter of their name
+                                .member-avatar #{user.name ? user.name.charAt(0) : 'U'}
+                                
+                                .item-body(style="text-align: center;")
+                                    h3 #{user.name}
+                                    p.badge #{user.item_count || 0} Items Shared
+                                    
+                                    a.btn(href=`/user/${user.user_id}`) View Profile
+                    else
+                        p No members found in the database.
+            
+            .user-story
+                strong User Story: 
+                | "As a user, I want to view the profile of the person listing an item, so that I can understand who I am interacting with and build trust within the network."

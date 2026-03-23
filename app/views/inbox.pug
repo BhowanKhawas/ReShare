@@ -1,0 +1,43 @@
+doctype html 
+html 
+    head 
+        title My Inbox | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+            
+            .container
+                h1.page-title My Inbox
+                p View your active requests and items you are giving away.
+                
+                if conversations && conversations.length > 0
+                    .inbox-list(style="display: flex; flex-direction: column; gap: 15px; margin-top: 20px;")
+                        
+                        //- MVC: Loop through the conversations provided by the Controller
+                        each chat in conversations
+                            
+                            //- Logic to figure out if the logged-in user is the owner or the requester
+                            - const isOwner = currentUserId === chat.owner_id
+                            - const otherPersonName = isOwner ? chat.requester_name : chat.owner_name
+                            - const roleBadge = isOwner ? 'Giving Away' : 'Requesting'
+                            
+                            .chat-card(style="background: white; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 20px; box-shadow: 0 4px 15px rgba(26, 26, 46, 0.05); border: 1px solid #E5F4FF;")
+                                
+                                //- Item Thumbnail
+                                img(src=chat.image_url ? chat.image_url : 'https://placehold.co/100x100/E6F7F1/00D4A0?text=Item', alt=chat.item_title, style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px;")
+                                
+                                //- Chat Details
+                                .chat-info(style="flex-grow: 1;")
+                                    h3(style="margin: 0 0 5px 0;") #{chat.item_title}
+                                    p(style="margin: 0; color: #666; font-size: 0.95em;")
+                                        span.badge(style="margin-right: 10px;") #{roleBadge}
+                                        | Chatting with <strong>#{otherPersonName}</strong>
+                                
+                                //- Open Chat Button
+                                a.btn-green(href=`/chat/${chat.conversation_id}` style="width: auto; padding: 10px 20px;") Open Chat
+                else
+                    .empty-state(style="text-align: center; padding: 60px 20px; background: white; border-radius: 12px; margin-top: 20px; border: 1px solid #E5F4FF;")
+                        h3(style="margin-top: 0;") No messages yet!
+                        p(style="color: #666;") Browse the marketplace to request items, or list your own to start chatting.
+                        a.btn(href="/browse" style="max-width: 200px; margin: 20px auto 0;") Browse Items

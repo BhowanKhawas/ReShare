@@ -73,6 +73,24 @@ class User {
         this.name = newName;
         return true;
     }
+    // --- ADD THIS METHOD TO YOUR USER CLASS ---
+    /**
+     * Static method to fetch a user's role by ID
+     * Used by middleware for automatic admin verification
+     */
+    static async getRole(userId) {
+        const sql = "SELECT role FROM USERS WHERE user_id = ?";
+        try {
+            const result = await db.query(sql, [userId]);
+            if (result && result.length > 0) {
+                return result[0].role; // Returns 'admin' or 'user'
+            }
+            return 'user'; // Fallback if user not found
+        } catch (err) {
+            console.error("Database error in getRole:", err);
+            return 'user';
+        }
+    }
 }
 
 module.exports = { User };

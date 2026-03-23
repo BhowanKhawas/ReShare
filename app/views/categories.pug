@@ -1,0 +1,26 @@
+doctype html
+html
+    head
+        title Categories | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        .wrapper
+            include ./includes/nav.pug
+            
+            .container
+                h1.page-title Browse by Category
+                p.subtitle Select a category to see what your community is sharing.
+                
+                .category-grid
+                each cat in categories
+                    .category-card
+                        .category-icon 
+                            span #{cat.icon || '📦'} 
+                        
+                        //- Matches "C.name AS category_name" from your model
+                        h3 #{cat.category_name} 
+                        
+                        //- Matches "COUNT(...) AS item_count" from your model
+                        p.item-count #{cat.item_count} Items Available
+                        
+                        a.btn-category(href=`/browse?category=${cat.category_id}`) View Items

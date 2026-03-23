@@ -1,12 +1,40 @@
 const db = require('../services/db');
 
 class Listing {
-    // MVC static method to handle the database insert
-    static async create(data) {
-        const sql = "INSERT INTO LISTINGS (title, category, item_condition, description, user_id) VALUES (?, ?, ?, ?, ?)";
-        // Using user_id 1 as a placeholder until you have a session/login system
-        const params = [data.title, data.category, data.item_condition, data.description, 1];
-        return await db.query(sql, params);
+    // ... your existing methods ...
+
+    static async markAsClaimed(listingId, claimerId) {
+        try {
+            // 1. Get the owner_id before we update anything
+            const ownerQuery = "SELECT user_id FROM LISTINGS WHERE listing_id = ?";
+            const result = await db.query(ownerQuery, [listingId]);
+            
+            if (result.length === 0) throw new Error("Listing not found");
+            const ownerId = result[0].user_id;
+
+            // 2. Update the Listing status and claimer
+            const updateListingSql = `
+                UPDATE LISTINGS 
+                SET status = 'completed', 
+                    claimed_by_id = ?, 
+                    claimed_at = CURRENT_TIMESTAMP 
+                WHERE listing_id = ?
+            `;
+            await db.query(updateListingSql, [claimerId, listingId]);
+
+            // 3. Increment the owner's gifted count
+            const updateUserSql = `
+                UPDATE USERS 
+                SET items_gifted_count = items_gifted_count + 1 
+                WHERE user_id = ?
+            `;
+            await db.query(updateUserSql, [ownerId]);
+
+            return true;
+        } catch (err) {
+            console.error("Error in markAsClaimed Model:", err);
+            throw err;
+        }
     }
 }
 

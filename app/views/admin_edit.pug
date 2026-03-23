@@ -1,0 +1,41 @@
+doctype html
+html
+    head
+        title Admin Edit | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        .wrapper
+            include ./includes/nav.pug
+            
+            .admin-page-container
+                .admin-edit-card
+                    .card-header
+                        h1 🛠️ Admin: Rewrite Listing
+                        p.subtitle You are currently moderating this post. All changes are final.
+                    
+                    form(action=`/admin/update-item/${item.listing_id}` method="POST" class="admin-form")
+                        .form-group
+                            label Title
+                            input(type="text" name="title" value=item.title required)
+                        
+                        .form-group
+                            label Description
+                            textarea(name="description" rows="5") #{item.description}
+                        
+                        .form-row
+                        .form-group
+                            label Condition
+                            select(name="condition")
+                                each c in ['New', 'Like New', 'Good', 'Fair', 'Poor']
+                                    option(value=c selected=(item.item_condition === c)) #{c}
+                        
+                        .form-group
+                            label Category
+                            select(name="category")
+                                each cat in categories
+                                    //- CHANGED 'cat.category_name' to 'cat.name' to match your database
+                                    option(value=cat.category_id selected=(item.category_id === cat.category_id)) #{cat.name}
+                        
+                        .form-actions
+                            button.btn-update(type="submit") Update Listing Permanently
+                            a.btn-cancel(href=`/item/${item.listing_id}`) Cancel

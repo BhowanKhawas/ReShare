@@ -1,0 +1,44 @@
+doctype html 
+html 
+    head 
+        title Chat: #{chatDetails.item_title} | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        div.wrapper
+            include ./includes/nav.pug
+            
+            .container(style="max-width: 800px;")
+                //- Header Area
+                .chat-header(style="background: white; padding: 20px; border-radius: 12px 12px 0 0; border: 1px solid #E5F4FF; border-bottom: none; display: flex; justify-content: space-between; align-items: center;")
+                    div
+                        h2(style="margin: 0 0 5px 0; font-size: 1.4rem;") #{chatDetails.item_title}
+                        p(style="margin: 0; color: #666;") Chatting with <strong>#{chattingWith}</strong>
+                    a.btn(href="/inbox" style="width: auto; padding: 8px 15px; font-size: 0.9rem; background: #E5F4FF; color: #4A8FFF;") ← Back to Inbox
+
+                //- --- NEW: Completion Box for Owners ---
+                //- Only shows if the logged-in user is the owner of the item
+                if currentUserId === chatDetails.owner_id
+                    .completion-box(style="background: #E6F7F1; padding: 15px; border-radius: 0; border: 1px solid #E5F4FF; border-top: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;")
+                        div
+                            strong(style="color: #008890;") Item Exchange 
+                            p(style="margin: 0; font-size: 0.85rem; color: #666;") Has #{chattingWith} picked up the item?
+                        form(action=`/mark-claimed/${chatDetails.conversation_id}` method="POST")
+                            //- Hidden fields to pass necessary IDs to the Controller
+                            input(type="hidden" name="listingId" value=chatDetails.listing_id)
+                            input(type="hidden" name="claimerId" value=chatDetails.requester_id)
+                            button.btn-green(type="submit" style="width: auto; padding: 8px 15px; font-size: 0.85rem;") Mark as Claimed
+
+                //- Messages Scroll Area
+                .chat-messages(style="background: #fdfdfd; border: 1px solid #E5F4FF; height: 50vh; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;")
+                    each msg in messages
+                        - const isMe = msg.sender_id === currentUserId
+                        .message-row(style=`display: flex; flex-direction: column; align-items: ${isMe ? 'flex-end' : 'flex-start'};`)
+                            .bubble(style=`max-width: 70%; padding: 12px 18px; border-radius: 20px; font-size: 0.95rem; line-height: 1.4; ${isMe ? 'background: #00D4A0; color: white; border-bottom-right-radius: 4px;' : 'background: #E5F4FF; color: #1A1A2E; border-bottom-left-radius: 4px;'}`)
+                                | #{msg.message_text}
+                            small(style="color: #999; font-size: 0.75rem; margin-top: 5px;") #{new Date(msg.sent_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+
+                //- Input Form
+                .chat-input(style="background: white; padding: 20px; border-radius: 0 0 12px 12px; border: 1px solid #E5F4FF; border-top: none;")
+                    form(action=`/chat/${chatDetails.conversation_id}/send` method="POST" style="display: flex; gap: 10px;")
+                        input(type="text" name="message_text" placeholder="Type your message here..." required autocomplete="off" style="flex-grow: 1; padding: 15px; border: 2px solid #E5F4FF; border-radius: 8px; font-family: 'DM Sans', sans-serif;")
+                        button.btn-green(type="submit" style="width: auto; padding: 0 30px;") Send
