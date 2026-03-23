@@ -5,8 +5,7 @@ html
         link(rel="stylesheet", href="/style.css")
     body
         div.wrapper
-            include ./includes/nav.pug
-            
+            include ./includes/nav.pug 
             .main-content-bg
                 .container
                     if query && query.success === 'claimed'
@@ -56,7 +55,6 @@ html
                                 else if item.status === 'completed'
                                     .status-badge-completed
                                         h3 🎉 This item has been ReShared!
-
                     if session.role === 'admin'
                         .admin-zone
                             h3 🛡️ Admin Master Controls
@@ -65,7 +63,6 @@ html
                                 
                                 form(action=`/admin/delete-item/${item.listing_id}` method="POST" onsubmit="return confirm('WARNING: This will delete everything. Continue?')")
                                     button.btn-admin-delete(type="submit") Delete Permanently
-
                     .user-story-banner
                         strong User Story: 
                         | "As a user, I want to view a detailed page for each item to see its condition and contact the owner."
