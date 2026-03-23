@@ -38,7 +38,7 @@ class ItemDetail {
         }
 
     }
-
 }
+
 
 module.exports = ItemDetail;
