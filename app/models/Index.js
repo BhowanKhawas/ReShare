@@ -3,12 +3,24 @@ const db = require('../services/db');
 class Index {
     /**
      * Fetches recent items for the Home Page.
-     * CRITICAL: 'static' allows app.js to call this without creating a 'new' Index()
+     * Joins with LISTING_IMAGES to ensure photos render on the front page.
      */
     static async getRecentExchanges() {
-        // NOTE: I removed the "category" filter because your logs showed 
-        // that your database column might be named differently.
-        const sql = "SELECT * FROM LISTINGS ORDER BY created_at DESC LIMIT 4";
+        const sql = `
+            SELECT 
+                L.*, 
+                I.image_url 
+            FROM LISTINGS L
+            LEFT JOIN (
+                /* Subquery to grab exactly one image per listing */
+                SELECT listing_id, MAX(image_url) as image_url 
+                FROM LISTING_IMAGES 
+                GROUP BY listing_id
+            ) I ON L.listing_id = I.listing_id
+            ORDER BY L.created_at DESC 
+            LIMIT 4
+        `;
+        
         try {
             const results = await db.query(sql);
             return results;
@@ -24,5 +36,4 @@ class Index {
     }
 }
 
-// THIS MUST BE AT THE BOTTOM
 module.exports = Index;

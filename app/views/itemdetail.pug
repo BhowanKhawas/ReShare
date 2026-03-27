@@ -6,63 +6,71 @@ html
     body
         div.wrapper
             include ./includes/nav.pug 
-            .main-content-bg
-                .container
-                    if query && query.success === 'claimed'
-                        .alert-success
-                            strong Success! 
-                            | This item has been marked as ReShared.
+            
+            .container
+                if query && query.success === 'claimed'
+                    .alert-success
+                        strong Success! 
+                        | This item has been marked as ReShared.
 
-                    .product-showcase
-                        .left-column
-                            if item.image_url
-                                img.item-photo(src=item.image_url, alt=`Photo of ${item.title}`)
-                            else
-                                img.item-photo(src='/images/default.jpg', alt='No image available')
-                                
-                        .right-column
-                            h2.item-heading #{item.title}
+                .product-showcase
+                    //- 🖼️ LEFT COLUMN: The sticky, beautifully cropped image
+                    .left-column
+                        if item.image_url
+                            img.item-photo(src=item.image_url, alt=`Photo of ${item.title}`)
+                        else
+                            img.item-photo(src='/images/default.jpg', alt='No image available')
                             
-                            .info-card
-                                p <strong>Category:</strong> #{item.category_name || 'General'}
-                                p <strong>Condition:</strong> #{item.item_condition || 'Used'}
-                                p <strong>Location:</strong> #{item.location_name || 'Unknown'} (approx.)
-                                p <strong>Posted:</strong> #{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
-                                
-                            .info-card
-                                h3 Description:
-                                p #{item.description}
-                                
-                            .info-card
-                                h3 Listed by:
-                                .owner-profile
-                                    .avatar #{item.owner_name ? item.owner_name.charAt(0).toUpperCase() : '?'}
-                                    div
-                                        p.owner-name #{item.owner_name || 'Anonymous User'}
-                                        a.profile-link(href=`/user/${item.user_id}`) View Profile →
+                    //- 📝 RIGHT COLUMN: The details and actions
+                    .right-column
+                        h2 #{item.title}
+                        
+                        .info-card
+                            p <strong>Category:</strong> #{item.category_name || 'General'}
+                            p <strong>Condition:</strong> #{item.item_condition || 'Used'}
+                            p <strong>Location:</strong> #{item.location_name || 'Unknown'} (approx.)
+                            p <strong>Posted:</strong> #{item.created_at ? new Date(item.created_at).toLocaleDateString() : 'Recently'}
+                            
+                        .info-card
+                            strong Description:
+                            p #{item.description}
+                            
+                        .info-card
+                            strong Listed by:
+                            //- UPDATED: Changed to seller-profile to hook into the new flexbox CSS
+                            .seller-profile
+                                .avatar #{item.owner_name ? item.owner_name.charAt(0).toUpperCase() : '?'}
+                                div
+                                    p(style="margin: 0; font-weight: bold; color: #1A1A2E;") #{item.owner_name || 'Anonymous User'}
+                                    a(href=`/user/${item.user_id}` style="font-size: 0.85rem; color: #00D4A0; text-decoration: none; font-weight: bold;") View Profile →
 
-                            .info-actions
-                                if session.uid && session.uid !== item.user_id && item.status === 'available'
-                                    form(action=`/request-chat/${item.listing_id}` method="POST")
-                                        button.btn-chat(type="submit") Request to Chat
-                                
-                                else if session.uid === item.user_id && item.status === 'available'
-                                    .owner-actions
-                                        p.status-msg 📢 This is your listing. Is the item gone?
-                                        form(action=`/mark-claimed/${item.listing_id}` method="POST" onsubmit="return confirm('Confirming this will close the listing and credit your gifted count. Proceed?')")
-                                            button.btn-claimed(type="submit") Mark as Claimed ✅
+                        //- 🔘 ACTION BUTTONS
+                        .info-actions
+                            if session.uid && session.uid !== item.user_id && item.status === 'available'
+                                form(action=`/request-chat/${item.listing_id}` method="POST")
+                                    button.btn-chat(type="submit") Request to Chat
+                            
+                            else if session.uid === item.user_id && item.status === 'available'
+                                .owner-actions
+                                    p.status-msg 📢 This is your listing. Is the item gone?
+                                    form(action=`/mark-claimed/${item.listing_id}` method="POST" onsubmit="return confirm('Confirming this will close the listing and credit your gifted count. Proceed?')")
+                                        button.btn-claimed(type="submit") Mark as Claimed ✅
 
-                                else if item.status === 'completed'
-                                    .status-badge-completed
-                                        h3 🎉 This item has been ReShared!
-                    if session.role === 'admin'
-                        .admin-zone
-                            h3 🛡️ Admin Master Controls
-                            .admin-btn-group
-                                a.btn-admin-edit(href=`/admin/edit-item/${item.listing_id}`) Edit Listing
+                            else if item.status === 'completed'
+                                .status-badge-completed
+                                    h3 🎉 This item has been ReShared!
+                                    
+                //- 🛡️ ADMIN ZONE (Only visible to admins)
+                if session.role === 'admin'
+                    .admin-zone
+                        h3 🛡️ Admin Master Controls
+                        .admin-btn-group
+                            a.btn-admin-edit(href=`/admin/edit-item/${item.listing_id}`) Edit Listing
+                            
+                            form(action=`/admin/delete-item/${item.listing_id}` method="POST" onsubmit="return confirm('WARNING: This will delete everything. Continue?')")
+                                button.btn-admin-delete(type="submit") Delete Permanently
                                 
-                                form(action=`/admin/delete-item/${item.listing_id}` method="POST" onsubmit="return confirm('WARNING: This will delete everything. Continue?')")
-                                    button.btn-admin-delete(type="submit") Delete Permanently
-                    .user-story-banner
-                        strong User Story: 
-                        | "As a user, I want to view a detailed page for each item to see its condition and contact the owner."
+                //- 📚 USER STORY REQUIREMENT
+                .user-story-banner
+                    strong User Story: 
+                    | "As a user, I want to view a detailed page for each item to see its condition and contact the owner."
