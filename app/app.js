@@ -9,13 +9,15 @@ const path = require("path");
 const express = require("express");
 const app = express();
 
+
 // ==========================================
 // 1. ENVIRONMENT & IMPORTS
 // ==========================================
 require("dotenv").config({ path: path.join(__dirname, '../.env') });
 
 const db = require('./services/db'); 
-const { User } = require('./models/User'); // Only ONE User import!
+const { User } = require('./models/User');
+const { Auth } = require('./models/login-signup');
 const Listing = require('./models/listing'); 
 const Browse = require('./models/Browse');
 const ItemDetail = require('./models/ItemDetail');
@@ -37,6 +39,9 @@ app.set('views', path.join(__dirname, 'views'));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+//bootstrap static files
+app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
+app.use('/bootstrap-icons', express.static('node_modules/bootstrap-icons'));
 
 // Session Management
 var session = require('express-session');
@@ -90,60 +95,83 @@ const isAdmin = (req, res, next) => {
 // 3. PUBLIC & AUTH ROUTING
 // ==========================================
 
+// Render the login page
 app.get("/login", (req, res) => res.render("login"));
 
+// Render the signup page and fetch location data for the dropdown
 app.get("/signup", async (req, res) => {
     try {
         const locations = await db.query("SELECT location_id, city, region FROM LOCATIONS");
         res.render("signup", { locations: locations });
     } catch (err) {
+        console.error("Signup View Error:", err.message);
         res.status(500).send("Error loading signup page.");
     }
 });
 
+// SIGNUP: Handles account creation or password resets
 app.post('/set-password', async (req, res) => {
     const { name, email, location, password } = req.body;
-    const user = new User(email, name, location);
+    
+    // Use the Auth model for security-related tasks
+    const auth = new Auth(email, name, location); 
+    
     try {
-        const uId = await user.getIdFromEmail();
+        const uId = await auth.getIdFromEmail();
+        
         if (uId) {
-            await user.setUserPassword(password);
-            res.send('Password updated successfully.');
+            // If user exists, update their password
+            await auth.setUserPassword(password);
+            res.send('Password updated successfully. <a href="/login">Login here</a>');
         } else {
-            await user.addUser(password);
+            // If new user, add them to the database
+            await auth.addUser(password);
             res.redirect('/login'); 
         }
     } catch (err) {
+        console.error("Signup Error:", err.message);
         res.status(500).send('Server error during signup');
     }
 });
 
+// LOGIN: Authenticates user and starts a session
 app.post('/authenticate', async (req, res) => {
     const { email, password } = req.body; 
-    const user = new User(email); 
+    
+    // Use the Auth model to handle the logic
+    const auth = new Auth(email); 
+    
     try {
-        const uId = await user.getIdFromEmail();
+        const uId = await auth.getIdFromEmail();
+        
         if (uId) {
-            const match = await user.authenticate(password);
+            const match = await auth.authenticate(password);
+            
             if (match) {
+                // Set session variables for use across the site
                 req.session.uid = uId;
                 req.session.loggedIn = true;
-                req.session.role = user.role;
+                req.session.role = auth.role; 
+                
                 res.redirect('/'); // Go to Home on success
             } else {
-                res.send('Invalid password.');
+                res.send('Invalid password. <a href="/login">Try again</a>');
             }
         } else {
-            res.send('Invalid email.');
+            res.send('Invalid email. <a href="/signup">Create an account</a>');
         }
     } catch (err) {
+        console.error("Login Error:", err.message);
         res.status(500).send("Login error occurred.");
     }
 });
 
+// LOGOUT: Destroys the session and redirects to login
 app.get('/logout', (req, res) => {
-    req.session.destroy();
-    res.redirect('/login');
+    req.session.destroy((err) => {
+        if (err) console.error("Logout Error:", err);
+        res.redirect('/login');
+    });
 });
 
 // ==========================================
@@ -214,6 +242,30 @@ app.get("/user/:id", async (req, res) => {
     }
 });
 
+// THE BRIDGE: Connects the "/profile" URL to your "user.pug" template
+app.get("/profile", async (req, res) => {
+    // 1. Guard: If the user isn't logged in, send them to login
+    if (!req.session || !req.session.uid) {
+        return res.redirect("/login");
+    }
+    
+    try {
+        // 2. Fetch the data for the user who is currently logged in
+        const userData = await User.getById(req.session.uid);
+        const userListings = await Listing.getByUserId(req.session.uid); 
+        
+        // 3. Render your existing "user.pug" file
+        res.render("user", { 
+            user: userData, 
+            listings: userListings, 
+            session: req.session 
+        });
+    } catch (err) {
+        console.error("Profile Route Error:", err);
+        res.status(500).send("Could not load your profile dashboard.");
+    }
+});
+
 
 // SECONDARY PAGES (Categories, Community, About)
 app.get("/categories", async (req, res) => {
@@ -266,21 +318,57 @@ app.post("/update-name", async (req, res) => {
         const userInstance = new User();
         userInstance.user_id = user_id; 
         await userInstance.updateName(newName);
-        req.session.name = newName;
-        res.redirect(`/user/${user_id}`); 
+        
+        // Redirect to /profile with a success flag
+        res.redirect(`/profile?success=updated`); 
     } catch (err) {
         res.status(500).send("Error updating profile name.");
     }
 });
 
-// MARK ITEM AS CLAIMED
 app.post("/mark-claimed/:id", async (req, res) => {
     if (!req.session.uid) return res.redirect("/login");
     try {
-        await Listing.markAsClaimed(req.params.id, req.session.uid); 
-        res.redirect(`/item/${req.params.id}?success=claimed`);
+        const listingId = req.params.id;
+        const convoId = req.body.convoId; // Grabbed from the hidden input in chat.pug
+
+        // 1. Mark the item as completed
+        await Listing.markAsClaimed(listingId, req.session.uid); 
+        
+        // 2. Increment the user's gifted count
+        await db.query("UPDATE USERS SET items_gifted_count = items_gifted_count + 1 WHERE user_id = ?", [req.session.uid]);
+
+        // 3. Smart Redirect: If we came from a chat, go back to the chat!
+        if (convoId) {
+            res.redirect(`/chat/${convoId}?success=claimed`);
+        } else {
+            res.redirect(`/item/${listingId}?success=claimed`);
+        }
     } catch (err) {
+        console.error("Claim Error:", err);
         res.status(500).send("Error updating listing status.");
+    }
+});
+
+// CHANGE PASSWORD FROM PROFILE DASHBOARD
+app.post("/profile/change-password", async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
+    
+    try {
+        const { new_password } = req.body;
+        
+        // Use the Auth model to handle hashing and saving
+        // We initialize it with an empty email because we use user_id to update
+        const auth = new Auth();
+        auth.user_id = req.session.uid; 
+        
+        await auth.setUserPassword(new_password);
+        
+        // Redirect back with a success message
+        res.redirect(`/user/${req.session.uid}?success=password`);
+    } catch (err) {
+        console.error("Password Update Error:", err);
+        res.status(500).send("Error updating password.");
     }
 });
 
@@ -288,53 +376,91 @@ app.post("/mark-claimed/:id", async (req, res) => {
 // 6. MESSAGING & CHAT ROUTES
 // ==========================================
 
+// REQUEST CHAT: Creates a new conversation from an item page
 app.post("/request-chat/:id", async (req, res) => {
     if (!req.session.uid) return res.redirect('/login');
     try {
-        await Chat.createConversation(req.params.id, req.session.uid);
+        const listingId = req.params.id;
+        const requesterId = req.session.uid;
+
+        // Use the Model to create the conversation
+        await Chat.createConversation(listingId, requesterId);
+        
+        // Redirect to inbox to see the new chat room
         res.redirect('/inbox');
     } catch (err) {
+        console.error("Chat Request Error:", err.message);
         res.status(500).send("Could not process chat request.");
     }
 });
 
+// INBOX: Displays all active conversations for the logged-in user
 app.get('/inbox', async (req, res) => {
     if (!req.session.uid) return res.redirect('/login');
     try {
         const conversations = await Inbox.getUserConversations(req.session.uid);
-        res.render('inbox', { conversations: conversations, currentUserId: req.session.uid });
+        
+        // Pass session so nav.pug knows we are logged in
+        res.render('inbox', { 
+            conversations: conversations, 
+            session: req.session 
+        });
     } catch (err) {
+        console.error("Inbox Load Error:", err.message);
         res.status(500).send("Could not load inbox.");
     }
 });
 
+// CHAT ROOM: Displays messages and the input area
 app.get('/chat/:id', async (req, res) => {
     if (!req.session.uid) return res.redirect('/login');
     try {
         const convoId = req.params.id;
         const userId = req.session.uid;
+
+        // 1. Fetch details and verify this user is a participant
         const chatDetails = await Chat.getChatDetails(convoId, userId);
         
-        if (!chatDetails) return res.status(403).send("Permission denied.");
+        if (!chatDetails) {
+            return res.status(403).send("Access Denied: You are not a participant in this chat.");
+        }
 
+        // 2. Get message history
         const messages = await Chat.getMessages(convoId);
-        const chattingWith = (userId === chatDetails.owner_id) ? chatDetails.requester_name : chatDetails.owner_name;
 
-        res.render('chat', { chatDetails, messages, currentUserId: userId, chattingWith });
+        // 3. Logic: Determine the name of the person you are talking to
+        const chattingWith = (userId === chatDetails.owner_id) 
+            ? chatDetails.requester_name 
+            : chatDetails.owner_name;
+
+        // 4. Render the clean CSS-based view
+        res.render('chat', { 
+            chatDetails, 
+            messages, 
+            chattingWith,
+            session: req.session 
+        });
     } catch (err) {
+        console.error("Chat Room Load Error:", err.message);
         res.status(500).send("Could not load the chat room.");
     }
 });
 
+// SEND MESSAGE: Processes new message text
 app.post('/chat/:id/send', async (req, res) => {
     if (!req.session.uid) return res.redirect('/login');
     try {
-        const text = req.body.message_text; 
+        const convoId = req.params.id;
+        const text = req.body.message_text; // Matches the 'name' attribute in chat.pug [cite: 39]
+        
         if (text && text.trim().length > 0) {
-            await Chat.sendMessage(req.params.id, req.session.uid, text);
+            await Chat.sendMessage(convoId, req.session.uid, text);
         }
-        res.redirect(`/chat/${req.params.id}`);
+        
+        // Refresh the chat room to show the new message
+        res.redirect(`/chat/${convoId}`);
     } catch (err) {
+        console.error("Message Send Error:", err.message);
         res.status(500).send("Could not send your message.");
     }
 });
