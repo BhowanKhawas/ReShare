@@ -47,9 +47,7 @@ pool.getConnection()
 
     })
     .catch(err => {
-        console.log("❌ Database Connection Failed");
         console.log("Error:", err.message);
-
     });
 
 module.exports = { query };

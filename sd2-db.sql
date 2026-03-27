@@ -1,7 +1,3 @@
--- Database: sd2-db
-volumes:
-      - ./sd2-db.sql:/docker-entrypoint-initdb.d/init.sql
-
 
 
 -- ==============================================================================
