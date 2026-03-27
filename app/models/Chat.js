@@ -2,18 +2,13 @@ const db = require('../services/db');
 
 class Chat {
     /**
-     * 1. Get room details and verify access
+     * Fetches details about the chat room and checks if the user is a participant.
      */
     static async getChatDetails(conversationId, userId) {
         const sql = `
-            SELECT 
-                C.conversation_id, 
-                L.listing_id,
-                L.title AS item_title, 
-                L.user_id AS owner_id, 
-                C.requester_id,
-                REQ.name AS requester_name,
-                OWN.name AS owner_name
+            SELECT C.conversation_id, L.listing_id, L.title AS item_title, 
+                   L.user_id AS owner_id, C.requester_id,
+                   REQ.name AS requester_name, OWN.name AS owner_name
             FROM CONVERSATIONS C
             JOIN LISTINGS L ON C.listing_id = L.listing_id
             JOIN USERS REQ ON C.requester_id = REQ.user_id
@@ -25,9 +20,6 @@ class Chat {
         return results[0];
     }
 
-    /**
-     * 2. Fetch all messages
-     */
     static async getMessages(conversationId) {
         const sql = `
             SELECT M.*, U.name AS sender_name 
@@ -39,17 +31,11 @@ class Chat {
         return await db.query(sql, [conversationId]);
     }
 
-    /**
-     * 3. Send a new message
-     */
     static async sendMessage(conversationId, senderId, text) {
         const sql = "INSERT INTO MESSAGES (conversation_id, sender_id, message_text) VALUES (?, ?, ?)";
-        await db.query(sql, [conversationId, senderId, text]);
+        return await db.query(sql, [conversationId, senderId, text]);
     }
 
-    /**
-     * 4. Create conversation (Fixes the other error you saw)
-     */
     static async createConversation(listingId, requesterId) {
         const sql = "INSERT INTO CONVERSATIONS (listing_id, requester_id) VALUES (?, ?)";
         const result = await db.query(sql, [listingId, requesterId]);
@@ -57,5 +43,4 @@ class Chat {
     }
 }
 
-// CRITICAL: Ensure this is the ONLY export line at the bottom
 module.exports = Chat;

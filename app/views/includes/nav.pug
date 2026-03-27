@@ -1,6 +1,5 @@
 nav
     div.logo
-        //- Wrapped the logo in a link so clicking it goes Home
         a(href="/")
             img(src="/images/Logo.png" alt="ReShare Logo")
             
@@ -13,6 +12,8 @@ nav
         
         //- Smart Navigation Logic
         if session && session.uid
+            //- Added Chat/Inbox link here
+            a(href="/inbox") Chat
             a(href="/profile") My Profile
             a(href="/logout") Logout
         else
