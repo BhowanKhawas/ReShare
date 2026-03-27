@@ -4,9 +4,9 @@ class Listing {
     // 1. Create a new listing (Uses BOTH tables now!)
     static async create(data, userId) {
             // Step A: Save the main item details to LISTINGS
-            const sqlListing = `
-                INSERT INTO LISTINGS (title, description, category_id, item_condition, user_id, status)
-                VALUES (?, ?, ?, ?, ?, 'available')
+            const sql = `
+                INSERT INTO LISTINGS (title, description, category_id, item_condition, user_id, location_id, status)
+                VALUES (?, ?, ?, ?, ?, ?, 'available')
             `;
             // FIX: Added fallbacks (||) so these are NEVER undefined
             const paramsListing = [
@@ -14,12 +14,13 @@ class Listing {
                 data.description || "No description provided", 
                 data.category_id || 1, 
                 data.condition || "Good", // If 'condition' is missing, it uses 'Good'
-                userId
+                userId,
+                data.location_id || 1
             ];
 
             
             try {
-                const result = await db.query(sqlListing, paramsListing);
+                const result = await db.query(sql, paramsListing);
                 const newListingId = result.insertId;
 
                 // Step B: Save to LISTING_IMAGES
