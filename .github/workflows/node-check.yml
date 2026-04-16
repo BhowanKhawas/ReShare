@@ -3,6 +3,11 @@ name: Node Environment Check
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: 
+
+# Add this to fix the warning in THIS workflow
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   check-node:
@@ -14,7 +19,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '20' # This is your app's version, which is fine
 
       - name: Verify Version
         run: node --version
