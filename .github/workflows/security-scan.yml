@@ -1,18 +1,22 @@
 name: Security Scan
 
-# Added 'workflow_dispatch' to allow manual triggering from the Actions tab
 on: 
   push:
     branches: [ main ]
   workflow_dispatch: 
 
+# Add this section to fix the Node.js 20 warning
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   trivy-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4 # Pulls your ReShare code
+      - name: Checkout Code
+        uses: actions/checkout@v4 
 
-      - name: Run Trivy vulnerability scan
+      - name: Run Trivy scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
