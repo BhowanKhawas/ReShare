@@ -1,14 +1,18 @@
 name: Security Scan
 
-on: [push, pull_request]
+# Added 'workflow_dispatch' to allow manual triggering from the Actions tab
+on: 
+  push:
+    branches: [ main ]
+  workflow_dispatch: 
 
 jobs:
   trivy-scan:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4 # Pulls your ReShare code
 
-      - name: Run Trivy scan
+      - name: Run Trivy vulnerability scan
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
