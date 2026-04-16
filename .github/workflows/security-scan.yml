@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   workflow_dispatch: 
 
-# Add this section to fix the Node.js 20 warning
+# This is the part that fixes the warning
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
