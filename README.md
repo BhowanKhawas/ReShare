@@ -1,12 +1,11 @@
----
-
 # ReShare – Community-Based Item Sharing Platform
 
 ## 📋 Module Information
-* **Programme:** BSc Computer Science
-* **Module:** Software Engineering (CMP-N204-0)
-* **Assessment Type:** Group Project
-* **Academic Year:** 2025–2026
+
+- **Programme:** BSc Computer Science
+- **Module:** Software Engineering (CMP-N204-0)
+- **Assessment Type:** Group Project
+- **Academic Year:** 2025–2026
 
 ---
 
