@@ -1070,6 +1070,17 @@ input:focus, textarea:focus, select:focus {
     opacity: 0;
 }
 
+.btn-green {
+    background-color: #28a745;
+    color: white;
+    transition: background-color 0.3s ease;
+}
+
+.btn-green:hover {
+    background-color: #218838;
+}
+
+
 /* ==========================================================================
    11. PAGE: COMMUNITY MEMBERS (Add this here)
    ========================================================================== */

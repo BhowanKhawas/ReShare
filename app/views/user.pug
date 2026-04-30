@@ -17,12 +17,13 @@ html(lang="en")
                     .alert-success Profile updated successfully!
                 if query && query.success === 'password'
                     .alert-success Password changed successfully!
+                if query && query.success === 'deleted'
+                    .alert-success Item removed successfully.
 
                 .profile-dashboard-grid
                     //- ⚙️ LEFT COLUMN: Account Settings
                     .settings-sidebar
                         .profile-card
-                            //- The Avatar
                             .profile-avatar
                                 if user.profile_image
                                     img(src=user.profile_image alt="Profile Photo")
@@ -36,7 +37,6 @@ html(lang="en")
 
                             hr.divider
 
-                            //- Update Info Form
                             form(action="/update-name", method="POST")
                                 input(type="hidden", name="user_id", value=user.user_id)
                                 .form-group
@@ -46,7 +46,6 @@ html(lang="en")
 
                             hr.divider
 
-                            //- Change Password Form
                             form(action="/profile/change-password" method="POST")
                                 .form-group
                                     label New Password
@@ -64,12 +63,10 @@ html(lang="en")
                             
                             .gift-stat
                                 span.gift-icon 🎁
-                                //- Logic: Show 'item' for 1, 'items' for 0 or multiple.
                                 span You have gifted 
                                 strong.gift-number #{user.items_gifted_count || 0} 
                                 | #{user.items_gifted_count === 1 ? 'item' : 'items'} to the community! 
                                 span You have earned 
-                                //- Logic: points = gifted count * 10
                                 strong.points-count #{(user.items_gifted_count || 0) * 10} 
                                 | points.
 
@@ -81,9 +78,11 @@ html(lang="en")
                                 if user.last_login
                                     p <strong>Last Login:</strong> #{new Date(user.last_login).toLocaleString()}
 
-                        //- 2. The Shared Items Card
+                        //- 2. The Shared Items Card (NECESSARY CHANGES START HERE)
                         .profile-card
-                            h3 📦 My Shared Items
+                            .section-header(style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;")
+                                h3(style="margin: 0;") 📦 My Shared Items
+                                a.btn-green(href="/add-item" style="text-decoration: none; padding: 10px 15px; border-radius: 5px;") + Share Item
                             
                             if listings && listings.length > 0
                                 .listings-grid
@@ -94,11 +93,19 @@ html(lang="en")
                                                 span.badge(class=item.status) #{item.status}
                                             .item-body
                                                 h4.item-title #{item.title}
+                                                
+                                                //- Ownership Logic: Show Edit/Delete only if the user owns the item
+                                                if user.user_id === item.owner_id
+                                                    .item-management-actions(style="display: flex; gap: 8px; margin-bottom: 10px;")
+                                                        a.btn-edit(href=`/edit-item/${item.listing_id}` style="flex: 1; background: #ffc107; color: black; text-align: center; padding: 5px; border-radius: 4px; text-decoration: none; font-size: 0.85em; font-weight: bold;") Edit
+                                                        form(action=`/delete-item/${item.listing_id}` method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to delete this listing?')")
+                                                            button.btn-delete(type="submit" style="width: 100%; background: #dc3545; color: white; border: none; padding: 5px; border-radius: 4px; cursor: pointer; font-size: 0.85em; font-weight: bold;") Delete
+                                                
                                                 a.btn-outline.btn-block(href=`/item/${item.listing_id}`) View Listing
                             else
                                 .empty-state
                                     p You haven't shared any items yet.
-                                    a.btn-green(href="/add-item") Start Sharing Now
+                                    p Click the button above to start your first contribution!
 
                 //- User Story Requirement
                 .user-story-banner

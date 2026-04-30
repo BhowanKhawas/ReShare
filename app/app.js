@@ -467,3 +467,83 @@ const PORT = process.env.PORT || 3000;
 server.listen(PORT, function(){
     console.log(`🚀 ReShare Server active at http://127.0.0.1:${PORT}/`);
 });
+
+// ==========================================
+// --- CONTROLLER: Item Management ---
+// ==========================================
+
+const APP_CATEGORIES = [
+    "Furniture", "Electronics", "Books", "Clothing", 
+    "Home & Garden", "Toys & Games", "Sports Equipment", 
+    "Musical Instruments", "Pet Supplies", "Art & Collectibles"
+];
+
+// 1. GET: Show the Edit Form
+app.get('/edit-item/:id', async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
+    const itemId = req.params.id;
+
+    try {
+        // FIX: Changed owner_id to user_id based on your phpMyAdmin screenshot
+        const items = await db.query(
+            "SELECT * FROM LISTINGS WHERE listing_id = ? AND user_id = ?", 
+            [itemId, req.session.uid]
+        );
+
+        if (items.length > 0) {
+            res.render('edit-item', { 
+                item: items[0], 
+                categories: APP_CATEGORIES, 
+                session: req.session 
+            });
+        } else {
+            res.redirect('/profile?error=unauthorized');
+        }
+    } catch (err) {
+        res.status(500).send("Error loading item for edit.");
+    }
+});
+
+app.post('/edit-item/:id', async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
+    
+    const itemId = req.params.id;
+    const { title, description, category } = req.body;
+    const userId = req.session.uid;
+
+    try {
+        // COALESCE ensures that if the category name doesn't match, 
+        // it defaults to category_id 1 instead of NULL.
+        await db.query(
+            `UPDATE LISTINGS 
+             SET title = ?, 
+                 description = ?, 
+                 category_id = COALESCE((SELECT category_id FROM CATEGORIES WHERE name = ? LIMIT 1), 1) 
+             WHERE listing_id = ? AND user_id = ?`,
+            [title, description, category, itemId, userId]
+        );
+
+        console.log(`✅ Update Successful for Listing #${itemId}`);
+        res.redirect('/profile?success=updated');
+    } catch (err) {
+        console.error("❌ SQL Execution Error:", err.message); // This matches your log
+        res.redirect('/profile?error=update_failed');
+    }
+});
+
+// 3. POST: Process the Deletion
+app.post('/delete-item/:id', async (req, res) => {
+    if (!req.session.uid) return res.redirect("/login");
+    const itemId = req.params.id;
+
+    try {
+        // FIX: Changed owner_id to user_id
+        await db.query(
+            "DELETE FROM LISTINGS WHERE listing_id = ? AND user_id = ?", 
+            [itemId, req.session.uid]
+        );
+        res.redirect('/profile?success=deleted');
+    } catch (err) {
+        res.redirect('/profile?error=delete_failed');
+    }
+});

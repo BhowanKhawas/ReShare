@@ -1,0 +1,34 @@
+doctype html
+html(lang="en")
+    head
+        title Edit #{item.title} | ReShare
+        link(rel="stylesheet", href="/style.css")
+    body
+        .wrapper
+            include ./includes/nav.pug
+            .container
+                .page-header
+                    h1 ✏️ Edit Listing
+                    p Modify the details of your shared item.
+
+                .profile-card(style="max-width: 600px; margin: 0 auto;")
+                    form(action=`/edit-item/${item.listing_id}` method="POST")
+                        .form-group
+                            label(for="title") Item Title
+                            input#title(type="text" name="title" value=item.title required)
+                        
+                        .form-group
+                            label(for="description") Description
+                            textarea#description(name="description" rows="5" required) #{item.description}
+                        
+                        .form-group
+                            label(for="category") Category
+                            select#category(name="category")
+                                option(value="Kitchen" selected=item.category==='Kitchen') Kitchen
+                                option(value="Electronics" selected=item.category==='Electronics') Electronics
+                                option(value="Tools" selected=item.category==='Tools') Tools
+                                option(value="Garden" selected=item.category==='Garden') Garden
+
+                        .form-actions(style="display: flex; gap: 10px; margin-top: 20px;")
+                            button.btn-update(type="submit" style="flex: 1;") Save Changes
+                            a.btn-outline(href="/profile" style="flex: 1; text-align: center; text-decoration: none; line-height: 40px;") Cancel
