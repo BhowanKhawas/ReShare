@@ -46,10 +46,6 @@
 ## 🏗 System Architecture
 The project follows the **Model-View-Controller (MVC)** architectural pattern to ensure separation of concerns and code maintainability.
 
-http://googleusercontent.com/image_content/214
-
-
-
 * **Models:** Handle data logic and database queries (e.g., `Chat.js`, `User.js`)[cite: 1, 2].
 * **Views:** Pug templates for rendering the UI (e.g., `chat.pug`, `index.pug`)[cite: 1, 3].
 * **Controllers:** Express routes in `app.js` that bridge the models and views[cite: 1].
