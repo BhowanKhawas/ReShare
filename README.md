@@ -82,17 +82,6 @@ We utilize a multi-layered testing approach:
 
 ---
 
-### How to add this to your Repo:
-1. Open your project folder on your Mac.
-2. Open the file named `README.md`.
-3. Delete the old text and paste the content above.
-4. **Commit and Push:**
-   ```bash
-   git add README.md
-   git commit -m "docs: update README with real-time chat and Nightwatch testing"
-   git push origin [your-branch-name]
-   ```
-
 
 ## 🐳 Docker Setup & Installation
 
