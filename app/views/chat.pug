@@ -21,12 +21,12 @@ html(lang="en")
                             strong Item Exchange 
                             p Has #{chattingWith} picked up the item?
                         
-                        //- Points to the mark-claimed route using the specific listing ID
                         form(action=`/mark-claimed/${chatDetails.listing_id}` method="POST")
                             input(type="hidden" name="convoId" value=chatDetails.conversation_id)
                             button.btn-green(type="submit") Mark as Claimed
 
-                .chat-messages
+                //- 👇 ADDED: id="messages-list" so our JS can find the chat window
+                .chat-messages#messages-list
                     if messages && messages.length > 0
                         each msg in messages
                             - const isMe = msg.sender_id === session.uid
@@ -37,8 +37,83 @@ html(lang="en")
                     else
                         p.empty-chat Start the conversation below!
 
-                //- Input Form 
+                //- 👇 ADDED: id="chat-form" and id="chat-input"
                 footer.chat-input-area
-                    form(action=`/chat/${chatDetails.conversation_id}/send` method="POST")
-                        input(type="text" name="message_text" placeholder="Type your message here..." required autocomplete="off")
-                        button.btn-green(type="submit") Send
+                    form#chat-form(action=`/chat/${chatDetails.conversation_id}/send` method="POST")
+                        input#chat-input(type="text" name="message_text" placeholder="Type your message here..." required autocomplete="off")
+                        button.btn-green(type="submit") Send 
+            
+            //- ==========================================
+            //- 🔌 REAL-TIME SOCKET.IO JAVASCRIPT 🔌
+            //- ==========================================
+            script(src="/socket.io/socket.io.js")
+            script.
+                const socket = io();
+                const form = document.getElementById('chat-form');
+                const input = document.getElementById('chat-input');
+                const messagesList = document.getElementById('messages-list');
+                
+                // Grab the user and chat info directly from your Pug variables
+                // 🚨 WRAPPED IN QUOTES TO PREVENT JS CRASH 🚨
+                const currentUserId = "#{session.uid}"; 
+                const conversationId = "#{chatDetails.conversation_id}";
+
+                // 1. Intercept the form submission to prevent the page from refreshing
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault(); 
+                    
+                    if (input.value) {
+                        // Package the data to send to the server
+                        const messageData = {
+                            conversation_id: conversationId,
+                            sender_id: currentUserId,
+                            message: input.value
+                        };
+                        
+                        // Send message instantly via WebSockets
+                        socket.emit('chat message', messageData);
+                        
+                        // Clear the text box
+                        input.value = '';
+                    }
+                });
+
+                // 2. Listen for incoming messages from the server
+                socket.on('chat message', function(data) {
+                    // Make sure the message belongs to THIS specific chat room
+                    if (String(data.conversation_id) === String(conversationId)) {
+                        const isMe = String(data.sender_id) === String(currentUserId);
+                        
+                        // Create the message row wrapper
+                        const row = document.createElement('div');
+                        row.className = 'message-row ' + (isMe ? 'msg-me' : 'msg-them');
+                        
+                        // Create the colored text bubble
+                        const bubble = document.createElement('div');
+                        bubble.className = 'bubble';
+                        bubble.textContent = data.message;
+                        
+                        // Create the timestamp
+                        const timeSpan = document.createElement('small');
+                        timeSpan.className = 'msg-time';
+                        timeSpan.textContent = 'Just now';
+                        
+                        // Put it together and push it to the screen
+                        row.appendChild(bubble);
+                        row.appendChild(timeSpan);
+                        
+                        // Remove the "Start the conversation" text if this is the first message
+                        const emptyMsg = document.querySelector('.empty-chat');
+                        if(emptyMsg) emptyMsg.remove();
+                        
+                        messagesList.appendChild(row);
+                        
+                        // Auto-scroll to the bottom so the new message is visible
+                        messagesList.scrollTop = messagesList.scrollHeight;
+                    }
+                });
+                
+                // Auto-scroll to bottom automatically when the page first loads
+                window.onload = function() {
+                    messagesList.scrollTop = messagesList.scrollHeight;
+                }

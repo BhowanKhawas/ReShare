@@ -37,7 +37,6 @@ html
                             
                         .info-card
                             strong Listed by:
-                            //- UPDATED: Changed to seller-profile to hook into the new flexbox CSS
                             .seller-profile
                                 .avatar #{item.owner_name ? item.owner_name.charAt(0).toUpperCase() : '?'}
                                 div
@@ -50,11 +49,20 @@ html
                                 form(action=`/request-chat/${item.listing_id}` method="POST")
                                     button.btn-chat(type="submit") Request to Chat
                             
+                            //- 🛠️ UPDATED: Owner Actions now include Edit and Delete
                             else if session.uid === item.user_id && item.status === 'available'
                                 .owner-actions
                                     p.status-msg 📢 This is your listing. Is the item gone?
                                     form(action=`/mark-claimed/${item.listing_id}` method="POST" onsubmit="return confirm('Confirming this will close the listing and credit your gifted count. Proceed?')")
-                                        button.btn-claimed(type="submit") Mark as Claimed ✅
+                                        button.btn-claimed(type="submit" style="width: 100%; margin-bottom: 10px;") Mark as Claimed ✅
+                                    
+                                    hr(style="border: 0; border-top: 1px solid #eee; margin: 15px 0;")
+
+                                    p.status-msg ⚙️ Manage your listing:
+                                    .owner-manage-group(style="display: flex; gap: 10px;")
+                                        a.btn-outline(href=`/edit-item/${item.listing_id}` style="flex: 1; text-align: center;") ✏️ Edit
+                                        form(action=`/delete-item/${item.listing_id}` method="POST" style="flex: 1;" onsubmit="return confirm('Are you sure you want to delete your listing? This cannot be undone.')")
+                                            button.btn-admin-delete(type="submit" style="width: 100%;") 🗑️ Delete
 
                             else if item.status === 'completed'
                                 .status-badge-completed
@@ -66,7 +74,6 @@ html
                         h3 🛡️ Admin Master Controls
                         .admin-btn-group
                             a.btn-admin-edit(href=`/admin/edit-item/${item.listing_id}`) Edit Listing
-                            
                             form(action=`/admin/delete-item/${item.listing_id}` method="POST" onsubmit="return confirm('WARNING: This will delete everything. Continue?')")
                                 button.btn-admin-delete(type="submit") Delete Permanently
                                 

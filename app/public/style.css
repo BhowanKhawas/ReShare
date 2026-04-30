@@ -613,6 +613,28 @@ input:focus, textarea:focus, select:focus {
 }
 .btn-view:hover { background: var(--navy-dark); color: white; }
 
+.points-display {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #fffbeb; /* Light gold background */
+    border: 1px solid #fde68a;
+    border-radius: 12px;
+    text-align: center;
+}
+
+.points-total {
+    display: block;
+    font-size: 2rem;
+    color: #d97706; /* Deep gold/orange */
+    margin: 5px 0;
+}
+
+.points-subtext {
+    font-size: 0.85rem;
+    color: #92400e;
+    font-style: italic;
+}
+
 /* ==========================================================================
    8. PAGE: BROWSE & CATEGORIES (View Layer Styles)
    ========================================================================== */
@@ -800,6 +822,116 @@ input:focus, textarea:focus, select:focus {
     font-weight: bold;
     font-size: 1.2rem;
     box-shadow: var(--shadow-sm);
+}
+
+/* The separator above the action buttons */
+.info-actions {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* The Owner Control Panel */
+.owner-actions {
+    background-color: #f8fafc; /* Very light slate */
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.status-msg {
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+/* --- Primary Buttons --- */
+
+/* 1. Request to Chat (Blue) */
+.btn-chat {
+    display: block;
+    width: 100%;
+    background-color: #3b82f6; 
+    color: white;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.05rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+.btn-chat:hover { 
+    background-color: #2563eb; 
+    transform: translateY(-1px);
+}
+
+/* 2. Mark as Claimed (Green) */
+.btn-claimed {
+    display: block;
+    background-color: #10b981; 
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.btn-claimed:hover { background-color: #059669; }
+
+/* 3. Edit Button (Outline) */
+.btn-outline {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: #475569;
+    border: 2px solid #cbd5e1;
+    padding: 10px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.btn-outline:hover {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    border-color: #94a3b8;
+}
+
+/* 4. Delete Button (Red) */
+.btn-admin-delete {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #ef4444; 
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+.btn-admin-delete:hover { background-color: #dc2626; }
+
+/* --- Completed State --- */
+.status-badge-completed {
+    background-color: #dcfce7;
+    color: #166534;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    border: 2px dashed #86efac;
+}
+.status-badge-completed h3 { 
+    margin: 0; 
+    font-size: 1.2rem; 
 }
 
 /* ==========================================================================

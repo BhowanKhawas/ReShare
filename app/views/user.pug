@@ -25,10 +25,8 @@ html(lang="en")
                             //- The Avatar
                             .profile-avatar
                                 if user.profile_image
-                                    //- Shows the uploaded image if it exists in the database
                                     img(src=user.profile_image alt="Profile Photo")
                                 else
-                                    //- Falls back to the first letter of the name
                                     | #{user.name ? user.name.charAt(0).toUpperCase() : '?'}
                             
                             h3.profile-name #{user.name}
@@ -66,9 +64,14 @@ html(lang="en")
                             
                             .gift-stat
                                 span.gift-icon 🎁
-                                span You have gifted
-                                strong.gift-number #{user.items_gifted_count || 0}
-                                span items to the community!
+                                //- Logic: Show 'item' for 1, 'items' for 0 or multiple.
+                                span You have gifted 
+                                strong.gift-number #{user.items_gifted_count || 0} 
+                                | #{user.items_gifted_count === 1 ? 'item' : 'items'} to the community! 
+                                span You have earned 
+                                //- Logic: points = gifted count * 10
+                                strong.points-count #{(user.items_gifted_count || 0) * 10} 
+                                | points.
 
                             hr.divider.light-divider
 

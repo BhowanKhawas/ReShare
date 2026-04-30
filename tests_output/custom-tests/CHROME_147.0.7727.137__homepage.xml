@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites errors="0"
+            failures="0"
+            tests="2">
+
+  <testsuite name="ReShare Basic Pages" id="custom-tests.homepage"
+    errors="0" failures="0" hostname="" package="homepage" skipped="0"
+    tests="2" time="0.9360" timestamp="">
+  
+    <testcase name="Checks if the Home Page loads correctly" classname="ReShare Basic Pages" time="0.2950" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+    <testcase name="Checks if the Login Page loads" classname="ReShare Basic Pages" time="0.6340" assertions="2">
+
+    
+
+    
+    </testcase>
+  
+
+  
+
+    
+
+  
+  </testsuite>
+</testsuites>
