@@ -1709,3 +1709,50 @@ input:focus, textarea:focus, select:focus {
     display: block;
     margin-bottom: 5px;
 }
+
+
+
+/* ==========================================================================
+   20. 404 Page Specific Styles
+   ========================================================================== */
+   
+.error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 80vh;
+    text-align: center;
+    padding: 20px;
+    background-color: #F4F6F8; /* Using the neutral brand background */
+}
+
+.error-container h1 {
+    font-family: 'Playfair Display', serif; /* Brand header font */
+    font-size: 8rem;
+    color: #1A1A2E; /* Bold navy brand color */
+    margin: 0;
+    line-height: 1;
+}
+
+.error-container p {
+    font-family: 'DM Sans', sans-serif; /* Brand body font */
+    font-size: 1.25rem;
+    color: #4ABFFF; /* Calm blue brand color[cite: 1] */
+    margin-bottom: 2rem;
+    max-width: 500px;
+}
+
+.error-container .btn {
+    background-color: #008890; /* Sustainability teal[cite: 1] */
+    color: #FFFFFF;
+    padding: 12px 30px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.error-container .btn:hover {
+    background-color: #0AD4A6; /* Fresh growth green hover[cite: 1] */
+}

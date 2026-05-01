@@ -463,11 +463,6 @@ io.on('connection', (socket) => {
     });
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, function(){
-    console.log(`🚀 ReShare Server active at http://127.0.0.1:${PORT}/`);
-});
-
 // ==========================================
 // --- CONTROLLER: Item Management ---
 // ==========================================
@@ -546,4 +541,23 @@ app.post('/delete-item/:id', async (req, res) => {
     } catch (err) {
         res.redirect('/profile?error=delete_failed');
     }
+});
+
+// ==========================================
+// 10. 404 ERROR CATCH-ALL
+// ==========================================
+app.use((req, res) => {
+    res.status(404).render('404', {
+        title: "Page Not Found",
+        user: req.session.user 
+    });
+});
+
+// ==========================================
+// 11. FINAL SERVER START
+// ==========================================
+const LISTEN_PORT = process.env.PORT || 3000; 
+server.listen(LISTEN_PORT, () => {
+    console.log(`🚀 ReShare Server active at http://127.0.0.1:${LISTEN_PORT}/`);
+    console.log(`✅ Database Connected successfully!`);
 });
