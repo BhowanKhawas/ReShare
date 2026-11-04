@@ -6,3 +6,5 @@ MYSQL_DATABASE=sd2-db
 MYSQL_ROOT_USER=root
 DB_CONTAINER=db
 DB_PORT=3306
+SESSION_SECRET=replace_with_a_random_secret
+NODE_ENV=development
