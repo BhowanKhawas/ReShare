@@ -18,7 +18,7 @@ const config = {
   queueLimit: 0,
 
   // Enable SSL when connecting to Aiven.
-  ...(process.env.DB_SSL === 'true' ? { ssl: {} } : {})
+  ...(process.env.DB_SSL === 'true' ? { ssl: { ca: process.env.DB_CA_CERT } } : {})
 };
 
 const pool = mysql.createPool(config);
