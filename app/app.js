@@ -44,12 +44,24 @@ app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.use('/bootstrap-icons', express.static('node_modules/bootstrap-icons'));
 
 // Session Management
-var session = require('express-session');
+const session = require('express-session');
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required');
+}
+
 app.use(session({
-    secret: 'secretkeysdfjsflyoifasd',
+    name: 'reshare.sid',
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } 
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24
+    }
 }));
 
 // Global Role & Dev Login Middleware
@@ -101,22 +113,22 @@ app.get("/signup", async (req, res) => {
     }
 });
 
+// Signup only creates new accounts. Email ownership alone must never authorize a password reset.
 app.post('/set-password', async (req, res) => {
     const { name, email, location, password } = req.body;
-    const auth = new Auth(email, name, location); 
-    
+    if (!name || !email || !location || typeof password !== 'string' || password.length < 8) {
+        return res.status(400).send('Please provide all required fields and a password of at least 8 characters.');
+    }
     try {
-        const uId = await auth.getIdFromEmail();
-        if (uId) {
-            await auth.setUserPassword(password);
-            res.send('Password updated successfully. <a href="/login">Login here</a>');
-        } else {
-            await auth.addUser(password);
-            res.redirect('/login'); 
+        const auth = new Auth(email.trim(), name.trim(), location);
+        if (await auth.getIdFromEmail()) {
+            return res.status(409).send('An account with this email already exists. Please log in.');
         }
+        await auth.addUser(password);
+        return res.redirect('/login');
     } catch (err) {
-        console.error("Signup Error:", err.message);
-        res.status(500).send('Server error during signup');
+        console.error('Signup Error:', err.message);
+        return res.status(500).send('Server error during signup.');
     }
 });
 
@@ -129,10 +141,28 @@ app.post('/authenticate', async (req, res) => {
         if (uId) {
             const match = await auth.authenticate(password);
             if (match) {
-                req.session.uid = uId;
-                req.session.loggedIn = true;
-                req.session.role = auth.role; 
-                res.redirect('/'); 
+                // Regenerate the session ID after authentication to help prevent
+                // session-fixation attacks.
+                req.session.regenerate((err) => {
+                    if (err) {
+                        console.error("Session Regeneration Error:", err);
+                        return res.status(500).send("Login error occurred.");
+                    }
+
+                    // Set session variables for use across the site.
+                    req.session.uid = uId;
+                    req.session.loggedIn = true;
+                    req.session.role = auth.role;
+
+                    req.session.save((saveErr) => {
+                        if (saveErr) {
+                            console.error("Session Save Error:", saveErr);
+                            return res.status(500).send("Login error occurred.");
+                        }
+
+                        res.redirect('/');
+                    });
+                });
             } else {
                 res.send('Invalid password. <a href="/login">Try again</a>');
             }
@@ -260,14 +290,17 @@ app.get("/add-item", (req, res) => {
 });
 
 app.post("/update-name", async (req, res) => {
-    const { user_id, newName } = req.body;
+    if (!req.session.uid) return res.redirect("/login");
+    const newName = typeof req.body.newName === "string" ? req.body.newName.trim() : "";
+    if (!newName || newName.length > 100) return res.status(400).send("Please enter a name between 1 and 100 characters.");
     try {
         const userInstance = new User();
-        userInstance.user_id = user_id; 
+        userInstance.user_id = req.session.uid;
         await userInstance.updateName(newName);
-        res.redirect(`/profile?success=updated`); 
+        return res.redirect("/profile?success=updated");
     } catch (err) {
-        res.status(500).send("Error updating profile name.");
+        console.error("Profile Name Update Error:", err.message);
+        return res.status(500).send("Error updating profile name.");
     }
 });
 
@@ -277,14 +310,16 @@ app.post("/mark-claimed/:id", async (req, res) => {
         const listingId = req.params.id;
         const convoId = req.body.convoId; 
 
-        await Listing.markAsClaimed(listingId, req.session.uid); 
-        await db.query("UPDATE USERS SET items_gifted_count = items_gifted_count + 1 WHERE user_id = ?", [req.session.uid]);
-
         if (convoId) {
-            res.redirect(`/chat/${convoId}?success=claimed`);
-        } else {
-            res.redirect(`/item/${listingId}?success=claimed`);
+            const chatDetails = await Chat.getChatDetails(convoId, req.session.uid);
+            if (!chatDetails || String(chatDetails.listing_id) !== String(listingId)) {
+                return res.status(403).send("You are not allowed to claim this listing from that conversation.");
+            }
         }
+        await Listing.markAsClaimed(listingId, req.session.uid);
+        return res.redirect(convoId
+            ? `/chat/${convoId}?success=claimed`
+            : `/item/${listingId}?success=claimed`);
     } catch (err) {
         console.error("Claim Error:", err);
         res.status(500).send("Error updating listing status.");
@@ -357,10 +392,12 @@ app.post('/chat/:id/send', async (req, res) => {
         const convoId = req.params.id;
         const text = req.body.message_text; 
         
-        if (text && text.trim().length > 0) {
-            await Chat.sendMessage(convoId, req.session.uid, text);
-        }
-        res.redirect(`/chat/${convoId}`);
+        const chatDetails = await Chat.getChatDetails(convoId, req.session.uid);
+        if (!chatDetails) return res.status(403).send("Access Denied: You are not a participant in this chat.");
+        if (typeof text !== "string" || !text.trim()) return res.redirect(`/chat/${convoId}`);
+        if (text.length > 4000) return res.status(400).send("Messages must be 4,000 characters or fewer.");
+        await Chat.sendMessage(convoId, req.session.uid, text.trim());
+        return res.redirect(`/chat/${convoId}`);
     } catch (err) {
         console.error("Message Send Error:", err.message);
         res.status(500).send("Could not send your message.");
@@ -410,12 +447,9 @@ app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
 // =========================================
 // 8. RAW DATA API ROUTES
 // =========================================
-app.get("/LISTINGS", (req, res) => {
-    db.query('SELECT * FROM LISTINGS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
-});
-app.get("/USERS", (req, res) => {
-    db.query('SELECT * FROM USERS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
-});
+// Raw database dump endpoints removed: they exposed private user and listing data.
+
+
 
 app.post("/add-item", upload.single('item_image'), async (req, res) => {
     if (!req.session.uid) return res.redirect("/login");
