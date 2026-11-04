@@ -1,4 +1,4 @@
-version: '3.3'
+
 services:
   web:
     build:
@@ -9,10 +9,11 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - db
-    # 👇 ADD THESE TWO LINES 👇
+      db:
+        condition: service_healthy
     env_file:
       - ./.env
+
   db:
     image: mysql
     restart: always
@@ -22,8 +23,14 @@ services:
       - "3308:3306"
     volumes:
       - ./db:/var/lib/mysql
-      # 👇 THIS IS THE MISSING MAGIC LINE 👇
       - ./sd2-db.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
   phpmyadmin:
     image: phpmyadmin/phpmyadmin:latest
     restart: always
