@@ -41,34 +41,34 @@ class Listing {
         }
     // 2. Existing markAsClaimed method
     static async markAsClaimed(listingId, claimerId) {
-        try {
-            const ownerQuery = "SELECT user_id FROM LISTINGS WHERE listing_id = ?";
-            const result = await db.query(ownerQuery, [listingId]);
-            
-            if (result.length === 0) throw new Error("Listing not found");
-            const ownerId = result[0].user_id;
-
-            const updateListingSql = `
-                UPDATE LISTINGS 
-                SET status = 'completed', 
-                    claimed_by_id = ?, 
-                    claimed_at = CURRENT_TIMESTAMP 
-                WHERE listing_id = ?
-            `;
-            await db.query(updateListingSql, [claimerId, listingId]);
-
-            const updateUserSql = `
-                UPDATE USERS 
-                SET items_gifted_count = items_gifted_count + 1 
-                WHERE user_id = ?
-            `;
-            await db.query(updateUserSql, [ownerId]);
-
-            return true;
-        } catch (err) {
-            console.error("Error in markAsClaimed Model:", err);
-            throw err;
+        const ownerRows = await db.query(
+            "SELECT user_id FROM LISTINGS WHERE listing_id = ?",
+            [listingId]
+        );
+        if (!ownerRows || ownerRows.length === 0) throw new Error("Listing not found");
+        const ownerId = ownerRows[0].user_id;
+        if (String(ownerId) === String(claimerId)) {
+            throw new Error("Listing is unavailable or cannot be claimed by its owner");
         }
+
+        // Conditional update prevents two users from claiming the same listing.
+        const update = await db.query(
+            `UPDATE LISTINGS
+             SET status = 'completed', claimed_by_id = ?, claimed_at = CURRENT_TIMESTAMP
+             WHERE listing_id = ? AND status = 'available' AND user_id <> ?`,
+            [claimerId, listingId, claimerId]
+        );
+        if (!update || update.affectedRows !== 1) {
+            throw new Error("Listing is unavailable or cannot be claimed by its owner");
+        }
+
+        // The owner, not the claimer, receives the gifted-item credit. This
+        // increment now happens once and only after a successful claim.
+        await db.query(
+            "UPDATE USERS SET items_gifted_count = items_gifted_count + 1 WHERE user_id = ?",
+            [ownerId]
+        );
+        return true;
     }
     // ==========================================
     // USER PROFILE ITEMS (Updated to join your image table)

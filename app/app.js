@@ -121,28 +121,22 @@ app.get("/signup", async (req, res) => {
     }
 });
 
-// SIGNUP: Handles account creation or password resets
+// Signup only creates new accounts. Email ownership alone must never authorize a password reset.
 app.post('/set-password', async (req, res) => {
     const { name, email, location, password } = req.body;
-    
-    // Use the Auth model for security-related tasks
-    const auth = new Auth(email, name, location); 
-    
+    if (!name || !email || !location || typeof password !== 'string' || password.length < 8) {
+        return res.status(400).send('Please provide all required fields and a password of at least 8 characters.');
+    }
     try {
-        const uId = await auth.getIdFromEmail();
-        
-        if (uId) {
-            // If user exists, update their password
-            await auth.setUserPassword(password);
-            res.send('Password updated successfully. <a href="/login">Login here</a>');
-        } else {
-            // If new user, add them to the database
-            await auth.addUser(password);
-            res.redirect('/login'); 
+        const auth = new Auth(email.trim(), name.trim(), location);
+        if (await auth.getIdFromEmail()) {
+            return res.status(409).send('An account with this email already exists. Please log in.');
         }
+        await auth.addUser(password);
+        return res.redirect('/login');
     } catch (err) {
-        console.error("Signup Error:", err.message);
-        res.status(500).send('Server error during signup');
+        console.error('Signup Error:', err.message);
+        return res.status(500).send('Server error during signup.');
     }
 });
 
@@ -341,16 +335,17 @@ app.get("/add-item", (req, res) => {
 
 // UPDATE PROFILE NAME
 app.post("/update-name", async (req, res) => {
-    const { user_id, newName } = req.body;
+    if (!req.session.uid) return res.redirect("/login");
+    const newName = typeof req.body.newName === "string" ? req.body.newName.trim() : "";
+    if (!newName || newName.length > 100) return res.status(400).send("Please enter a name between 1 and 100 characters.");
     try {
         const userInstance = new User();
-        userInstance.user_id = user_id; 
+        userInstance.user_id = req.session.uid;
         await userInstance.updateName(newName);
-        
-        // Redirect to /profile with a success flag
-        res.redirect(`/profile?success=updated`); 
+        return res.redirect("/profile?success=updated");
     } catch (err) {
-        res.status(500).send("Error updating profile name.");
+        console.error("Profile Name Update Error:", err.message);
+        return res.status(500).send("Error updating profile name.");
     }
 });
 
@@ -360,18 +355,16 @@ app.post("/mark-claimed/:id", async (req, res) => {
         const listingId = req.params.id;
         const convoId = req.body.convoId; // Grabbed from the hidden input in chat.pug
 
-        // 1. Mark the item as completed
-        await Listing.markAsClaimed(listingId, req.session.uid); 
-        
-        // 2. Increment the user's gifted count
-        await db.query("UPDATE USERS SET items_gifted_count = items_gifted_count + 1 WHERE user_id = ?", [req.session.uid]);
-
-        // 3. Smart Redirect: If we came from a chat, go back to the chat!
         if (convoId) {
-            res.redirect(`/chat/${convoId}?success=claimed`);
-        } else {
-            res.redirect(`/item/${listingId}?success=claimed`);
+            const chatDetails = await Chat.getChatDetails(convoId, req.session.uid);
+            if (!chatDetails || String(chatDetails.listing_id) !== String(listingId)) {
+                return res.status(403).send("You are not allowed to claim this listing from that conversation.");
+            }
         }
+        await Listing.markAsClaimed(listingId, req.session.uid);
+        return res.redirect(convoId
+            ? `/chat/${convoId}?success=claimed`
+            : `/item/${listingId}?success=claimed`);
     } catch (err) {
         console.error("Claim Error:", err);
         res.status(500).send("Error updating listing status.");
@@ -481,12 +474,12 @@ app.post('/chat/:id/send', async (req, res) => {
         const convoId = req.params.id;
         const text = req.body.message_text; // Matches the 'name' attribute in chat.pug [cite: 39]
         
-        if (text && text.trim().length > 0) {
-            await Chat.sendMessage(convoId, req.session.uid, text);
-        }
-        
-        // Refresh the chat room to show the new message
-        res.redirect(`/chat/${convoId}`);
+        const chatDetails = await Chat.getChatDetails(convoId, req.session.uid);
+        if (!chatDetails) return res.status(403).send("Access Denied: You are not a participant in this chat.");
+        if (typeof text !== "string" || !text.trim()) return res.redirect(`/chat/${convoId}`);
+        if (text.length > 4000) return res.status(400).send("Messages must be 4,000 characters or fewer.");
+        await Chat.sendMessage(convoId, req.session.uid, text.trim());
+        return res.redirect(`/chat/${convoId}`);
     } catch (err) {
         console.error("Message Send Error:", err.message);
         res.status(500).send("Could not send your message.");
@@ -540,12 +533,7 @@ app.post("/admin/delete-item/:id", isAdmin, async (req, res) => {
 // =========================================
 // 8. RAW DATA API ROUTES (For Developers / Debugging)
 // =========================================
-app.get("/LISTINGS", (req, res) => {
-    db.query('SELECT * FROM LISTINGS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
-});
-app.get("/USERS", (req, res) => {
-    db.query('SELECT * FROM USERS').then(r => res.json(r)).catch(() => res.status(500).send("DB Error"));
-});
+// Raw database dump endpoints removed: they exposed private user and listing data.
 
 
 
