@@ -1,20 +1,21 @@
-# Base image to use
-FROM node:latest
 
-# set a working directory
+# Use Node.js
+FROM node:20
+
+# Set working directory
 WORKDIR /src
 
-# Copy across project configuration information
-# Install application dependencies
-COPY package*.json /src/
+# Copy package files
+COPY package*.json ./
 
-# Ask npm to install the dependencies
-RUN npm install -g supervisor && npm install && npm install supervisor
+# Install dependencies
+RUN npm install
 
-# Copy across all our files
-COPY . /src
+# Copy application files
+COPY . .
 
-# Expose our application port (3000)
+# Render application port
 EXPOSE 3000
 
-
+# Start ReShare
+CMD ["npm", "start"]

@@ -590,8 +590,8 @@ app.use((req, res) => {
 // ==========================================
 // 11. FINAL SERVER START
 // ==========================================
-const LISTEN_PORT = process.env.PORT || 3000; 
-server.listen(LISTEN_PORT, () => {
-    console.log(`🚀 ReShare Server active at http://127.0.0.1:${LISTEN_PORT}/`);
-    console.log(`✅ Database Connected successfully!`);
+const LISTEN_PORT = process.env.PORT || 3000;
+server.listen(LISTEN_PORT, '0.0.0.0', () => {
+    console.log(`🚀 ReShare Server active on port ${LISTEN_PORT}`);
+    console.log(`✅ ReShare server started successfully!`);
 });
