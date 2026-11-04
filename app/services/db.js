@@ -7,8 +7,8 @@ require("dotenv").config({ path: path.join(__dirname, '../../.env') });
 // 2. Database Configuration
 const config = {
   db: {
-    host: process.env.DB_CONTAINER || 'db',
-    port: process.env.DB_PORT || 3306,
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || 3308,
     user: process.env.MYSQL_ROOT_USER || 'root',
     password: process.env.MYSQL_ROOT_PASSWORD,
     database: process.env.MYSQL_DATABASE || 'sd2-db',
