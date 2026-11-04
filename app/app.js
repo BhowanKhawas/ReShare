@@ -44,12 +44,24 @@ app.use('/bootstrap', express.static('node_modules/bootstrap/dist'));
 app.use('/bootstrap-icons', express.static('node_modules/bootstrap-icons'));
 
 // Session Management
-var session = require('express-session');
+const session = require('express-session');
+const isProduction = process.env.NODE_ENV === 'production';
+
+if (!process.env.SESSION_SECRET) {
+    throw new Error('SESSION_SECRET environment variable is required');
+}
+
 app.use(session({
-    secret: 'secretkeysdfjsflyoifasd',
+    name: 'reshare.sid',
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false } 
+    saveUninitialized: false,
+    cookie: {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: 'lax',
+        maxAge: 1000 * 60 * 60 * 24
+    }
 }));
 
 // Global Role & Dev Login Middleware
@@ -148,12 +160,28 @@ app.post('/authenticate', async (req, res) => {
             const match = await auth.authenticate(password);
             
             if (match) {
-                // Set session variables for use across the site
-                req.session.uid = uId;
-                req.session.loggedIn = true;
-                req.session.role = auth.role; 
-                
-                res.redirect('/'); // Go to Home on success
+                // Regenerate the session ID after authentication to help prevent
+                // session-fixation attacks.
+                req.session.regenerate((err) => {
+                    if (err) {
+                        console.error("Session Regeneration Error:", err);
+                        return res.status(500).send("Login error occurred.");
+                    }
+
+                    // Set session variables for use across the site.
+                    req.session.uid = uId;
+                    req.session.loggedIn = true;
+                    req.session.role = auth.role;
+
+                    req.session.save((saveErr) => {
+                        if (saveErr) {
+                            console.error("Session Save Error:", saveErr);
+                            return res.status(500).send("Login error occurred.");
+                        }
+
+                        res.redirect('/');
+                    });
+                });
             } else {
                 res.send('Invalid password. <a href="/login">Try again</a>');
             }
