@@ -32,11 +32,22 @@ class Chat {
     }
 
     static async sendMessage(conversationId, senderId, text) {
+        // Keep the participant check in the model as well as the HTTP route.
+        const participant = await this.getChatDetails(conversationId, senderId);
+        if (!participant) throw new Error("Not a participant in this conversation");
         const sql = "INSERT INTO MESSAGES (conversation_id, sender_id, message_text) VALUES (?, ?, ?)";
         return await db.query(sql, [conversationId, senderId, text]);
     }
 
     static async createConversation(listingId, requesterId) {
+        const listing = await db.query(
+            "SELECT user_id FROM LISTINGS WHERE listing_id = ? AND status = 'available'",
+            [listingId]
+        );
+        if (!listing || listing.length === 0) throw new Error("Listing is unavailable or does not exist");
+        if (String(listing[0].user_id) === String(requesterId)) {
+            throw new Error("You cannot start a conversation about your own listing");
+        }
         const sql = "INSERT INTO CONVERSATIONS (listing_id, requester_id) VALUES (?, ?)";
         const result = await db.query(sql, [listingId, requesterId]);
         return result.insertId;
